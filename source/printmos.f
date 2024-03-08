@@ -15,16 +15,17 @@ ccccccccccccccccccccccccccccccccccccccccccc
 ! ipao(nbf)    : # primitives in contracted AO 
 ! ibf(ncent)   : # of contracted AOs on atom
 
-      subroutine printmos(ncent,at,xyz,nmo,homo,norm,mowrcut,eval,tmp)
+      subroutine printmos(nc,at,xyz,nmo,homo,norm,mowrcut,eval,occ,tmp)
 
       use bascom
       implicit none
-      
-      integer, intent ( in ) :: nmo,ncent,at(ncent),homo
-      real*8,  intent ( in ) :: xyz(3,ncent)
+
+      integer, intent ( in ) :: nmo,nc,at(nc),homo
+      real*8,  intent ( in ) :: xyz(3,nc)
       real*8,  intent ( in ) :: norm(nmo)    
-      real*8,  intent ( in ) :: mowrcut           
+      real*8,  intent ( in ) :: mowrcut
       real*8,  intent ( in ) :: eval(nmo)
+      real*8,  intent ( in ) :: occ(nmo)
       real*8,  intent ( inout ) :: tmp(nmo,nmo)
 
       ! temporary variables
@@ -36,20 +37,15 @@ ccccccccccccccccccccccccccccccccccccccccccc
       integer lladr(0:3),ll(0:3)
       data lladr  /1,3,6,10/
       data ll     /0,1,4,10/
-      real*8,allocatable :: occ (:)
       real*8,allocatable :: cmo(:,:)
 
-      allocate(cmo(ncao,nmo),occ(nmo))
-
-!     rewind(42)
-!     read(42) tmp
-!     read(42) eval
-      
+      allocate(cmo(ncao,nmo))
+  
       do i=1,nmo 
          tmp(i,:)=tmp(i,:)*norm(i)
       enddo
 
-      call sao2cao(nmo,tmp,cmo,ncent,at)
+      call sao2cao(nmo,tmp,cmo,nc,at)
 
       do i=1,nmo 
          tmp(i,:)=tmp(i,:)/norm(i)
@@ -63,9 +59,6 @@ ccccccccccccccccccccccccccccccccccccccccccc
       open(unit=iwfn,file='wfn.xtb',form='unformatted',
      .     status='replace')
 
-      occ = 0
-      occ(1:homo) = 2.0d0
-
 ! only print out virtuals below cutoff
       nmomax=0
       do i=1,nmo
@@ -77,76 +70,65 @@ ccccccccccccccccccccccccccccccccccccccccccc
                     ! RHF case *
                     !***********
 ! write dimensions
-       write(iwfn)1
-       write(iwfn)ncent,nbf,nmomax,nprims
+      write(iwfn)1
+      write(iwfn)nc,nbf,nmomax,nprims
 ! now write coordinates & atom symbol
-       do i = 1,ncent
+      do i = 1,nc
          call aasym(at(i),atyp)
          write(iwfn) atyp
-       enddo
+      enddo
 
-       do i = 1,ncent
+      do i = 1,nc
          do j=1,3
             dum=xyz(j,i)
             write(iwfn) dum
          enddo 
          write(iwfn) at(i)
-       enddo       
-! Now print basis set data                       
+      enddo       
+! Now print basis set data
 
       k=0
-      do i=1, ncent
+      do i=1, nc
          iat=at(i)
          do j=1, bas_nsh(iat)
-         do iao=1,lladr(bas_lsh(j,iat))
-         k=k+1
-         lao(k)=ll(bas_lsh(j,iat))+iao
-         aoatcart(k)=i
-         enddo
+            do iao=1,lladr(bas_lsh(j,iat))
+               k=k+1
+               lao(k)=ll(bas_lsh(j,iat))+iao
+               aoatcart(k)=i
+            enddo
          enddo
       enddo
 
 ! print ipty
-       do i=1,nbf
-          k = lao(i)
-          do j=1,nprim(i)
-             write(iwfn) k
-          enddo
-       enddo
+      do i=1,nbf
+         k = lao(i)
+         do j=1,nprim(i)
+            write(iwfn) k
+         enddo
+      enddo
 ! iaoat
-       do i=1,nbf
-          k=aoatcart(i)
-          do j=1,nprim(i)
-             write(iwfn) k
-          enddo
-       enddo
+      do i=1,nbf
+         k=aoatcart(i)
+         do j=1,nprim(i)
+            write(iwfn) k
+         enddo
+      enddo
 ! ipao
-       do i=1,nbf
-          k=i
-          do j=1,nprim(i)
-             write(iwfn) k
-          enddo
-       enddo       
+      do i=1,nbf
+         k=i
+         do j=1,nprim(i)
+            write(iwfn) k
+         enddo
+      enddo
 
-! exponents and coefficients                                                                                                         
-         write(iwfn) prim_exp(1:nprims)
-         write(iwfn) prim_cnt(1:nprims) 
-         
+! exponents and coefficients
+      write(iwfn) prim_exp(1:nprims)
+      write(iwfn) prim_cnt(1:nprims) 
+
 ! now the mo data
-         write(iwfn) occ(1:nmomax) 
-!          allocate(eval_shift(nmomax))
-!          Do i=1,nmomax
-!          if(occ(i).lt.1.d-6)then
-!          eval_shift(i)=eval(i) + 0.17d0 !shift virtuals
-!          else
-!          eval_shift(i)=eval(i) 
-!          endif
-!          enddo
-!          write(iwfn) eval_shift(1:nmomax)
-         write(iwfn) eval(1:nmomax)
-!          deallocate(eval_shift)
-  
-         write(iwfn) cmo(1:nbf,1:nmomax)
+      write(iwfn) occ(1:nmomax)
+      write(iwfn) eval(1:nmomax)
+      write(iwfn) cmo(1:nbf,1:nmomax)
       close(iwfn)
 
       return

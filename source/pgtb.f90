@@ -225,7 +225,11 @@ subroutine pgtb(pr,prop,n,ndim,nel,nopen,homo,at,chrg,xyz,z,rab, &
    endif
 
 ! stda
-   if(prop.eq.4) call printmos(n,at,xyz,ndim,homo,norm,2d0,eps,U) ! cut virt. > 2 Eh because very high lying gTB MOs are crap
+   if(prop.eq.4) then
+      write(*,*) 'Writing output .xtb file'
+      call printmos(n,at,xyz,ndim,homo,norm,2d0,eps,focc,U) ! cut virt. > 2 Eh because very high lying gTB MOs are crap
+      write(*,*) 'Done!'
+   endif
 ! TM
    if(prop.eq.5) then
       call wr_tm_mos(ndim,n,nel,at,nopen,ndim,eps,U)                              ! write for TM all mos (incl. virts!)

@@ -733,7 +733,7 @@ end subroutine help
 
 subroutine head
    implicit none
-   character(len=40),parameter:: date='Do 28. Apr 14:28:45 CEST 2022'
+   character(len=40),parameter:: date='08. Mar 2024'
    character(len=10),parameter:: version='3.7'
 
    write(*,*)
@@ -745,8 +745,15 @@ subroutine head
    write(*,'(7x,''Version '',a,'', '',a)')trim(version),trim(date)
    write(*,*)
    write(*,'(7x,''Cite work conducted with this code as'')')
-   write(*,'(7x,''S. Grimme, M. Mueller, A. Hansen, unpublished.'')')
-
+   write(*,'(7x,''S. Grimme, M. Mueller, A. Hansen, J. Chem. Phys., 2023, 158, 124111.'')')
+   write(*,*) '                      DOI: 10.1063/5.0137838'
+   write(*,*)
+   write(*,*) '     This Version was made for use in NoSpherA2 and has been'
+   write(*,*) '     modified to match requirements of IO, without altering the'
+   write(*,*) '     original PTB model. The original PTB model is available at:'
+   write(*,*) '                https://github.com/grimme-lab/ptb'
+   write(*,*) '     The modified repository is available at:'
+   write(*,*) '                https://github.com/FlorianKleemiss/ptb'
    write(*,*)
 
 end
