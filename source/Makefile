@@ -107,5 +107,5 @@ $(la.f90): $(blas_level1.f90) $(blas_level2.f90) $(blas_level3.f90) $(lapack_eig
 
 #aufraeumen
 clean:
-	${RM} *.o
-	${RM} *.mod
+	-${RM} *.o
+	-${RM} *.mod
