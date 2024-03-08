@@ -448,6 +448,7 @@ program gTB
       &          efield,ML1,ML2,psh,q,P,F,eps,wbo,dip,alp)
       inquire(file='ptb_dump',exist=ex)
       if (ex) call system('mv ptb_dump ptb_dump_0')  ! REQUIREMENT FOR THIS COPY PROCESS WAS NOT CLEAR
+      if (prop.eq.4) goto 9999
    endif
 
 ! fit case
