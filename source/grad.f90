@@ -52,7 +52,7 @@
          grad(3,1)= (er-el)/(2d0*step)
          grad(3,2)=-(er-el)/(2d0*step)
       else
-         call getsymmetry2(.true.,n,at,xyz,0.0001d0,ntrans,ict,trans) 
+         !call getsymmetry2(.true.,n,at,xyz,0.0001d0,ntrans,ict,trans) 
          if(ntrans.gt.1) then ! symmetric
             dgen = 0
             do i=1,n

@@ -218,12 +218,6 @@ subroutine pgtb(pr,prop,n,ndim,nel,nopen,homo,at,chrg,xyz,z,rab, &
 
    Htmp = H
 
-! MO match for fit
-   if(allocated(cmo_ref).and.prop.ge.0.and.prop.lt.4) then
-      call getsymmetry(pr,n,at,xyz,0.01d0,50,highsym) ! get PG to check for MO degen.
-      call momatch(pr,highsym,ndim,homo,0,S,eps,U)    ! which modifies match routine
-   endif
-
 ! stda
    if(prop.eq.4) then
       write(*,*) 'Writing output .xtb file'

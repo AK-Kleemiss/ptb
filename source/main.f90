@@ -128,21 +128,20 @@ program gTB
    call getarg(1,fname)
    do i=2,command_argument_count()
       call getarg(i,arg1)
-      if(index(arg1,'-clean' ).ne.0)calc_ptb_grad=.true.  !
-      if(index(arg1,'-avcn' ) .ne.0)  acn=.true.  !
-      if(index(arg1,'-apo' )  .ne.0)wrapo=.true.  ! just printout shell pop for coding
-      if(index(arg1,'-polar') .ne.0)prop =2       ! polar
-      if(index(arg1,'-alpha') .ne.0)prop =2       ! polar
-      if(index(arg1,'-beta') .ne.0) prop =3       ! hyperpolar
-      if(index(arg1,'-hyperpolar') .ne.0) prop =3 ! hyperpolar
-      if(index(arg1,'-energy') .ne.0)energ=.true. ! energy
-      if(index(arg1,'-e'     ) .ne.0)energ=.true. ! energy
+      !if(index(arg1,'-clean' ).ne.0)calc_ptb_grad=.true.  !
+      !if(index(arg1,'-avcn' ) .ne.0)  acn=.true.  !
+      !if(index(arg1,'-apo' )  .ne.0)wrapo=.true.  ! just printout shell pop for coding
+      !if(index(arg1,'-polar') .ne.0)prop =2       ! polar
+      !if(index(arg1,'-alpha') .ne.0)prop =2       ! polar
+      !if(index(arg1,'-beta') .ne.0) prop =3       ! hyperpolar
+      !if(index(arg1,'-hyperpolar') .ne.0) prop =3 ! hyperpolar
+      !if(index(arg1,'-energy') .ne.0)energ=.true. ! energy
+      !if(index(arg1,'-e'     ) .ne.0)energ=.true. ! energy
       if(index(arg1,'-stda')   .ne.0)stda=.true.  ! stda write
-      if(index(arg1,'-tmwr')   .ne.0)tmwr=.true.  ! TM write
       if(index(arg1,'-test').ne.0) test =.true.   ! more data output
       if(index(arg1,'-nogtb').ne.0) nogtb =.true. !
-      if(index(arg1,'-raman').ne.0) raman =.true. !
-      if(index(arg1,'-d4only').ne.0) d4only =.true. !
+      !if(index(arg1,'-raman').ne.0) raman =.true. !
+      !if(index(arg1,'-d4only').ne.0) d4only =.true. !
       if(index(arg1,'-json').ne.0) then
          json =.true.
          call getarg(i+1,atmp)
@@ -249,24 +248,24 @@ program gTB
 ! read coordinates
    call rd(.true.,fname,n,xyz,at)
    call calcrab(n,at,xyz,rab)
-   if(tmwr) call wr_control_atoms(n,at,bname) ! control atoms block for e-gtb with TM
+   !if(tmwr) call wr_control_atoms(n,at,bname) ! control atoms block for e-gtb with TM
 
-   if(acn)then
-      avcn = 0
-      edum = 0
-      call ncoord_erf(n,at,rab,-2.0d0,cn)
-      do i=1,n
-         j=at(i)
-         avcn(j)=avcn(j)+cn(i)
-         edum(j)=edum(j)+1
-      enddo
-      open(unit=1,file='.data')
-      do i=1,86
-         write(1,*) avcn(i)/(edum(i)+1.d-6)
-      enddo
-      close(1)
-      goto 9999
-   endif
+   !if(acn)then
+   !   avcn = 0
+   !   edum = 0
+   !   call ncoord_erf(n,at,rab,-2.0d0,cn)
+   !   do i=1,n
+   !      j=at(i)
+   !      avcn(j)=avcn(j)+cn(i)
+   !      edum(j)=edum(j)+1
+   !   enddo
+   !   open(unit=1,file='.data')
+   !   do i=1,86
+   !      write(1,*) avcn(i)/(edum(i)+1.d-6)
+   !   enddo
+   !   close(1)
+   !   goto 9999
+   !endif
 
    call setavcn   ! av. el. CNs with erfs=-2.0
 
@@ -285,18 +284,18 @@ program gTB
 
 !     for PTB-RPBE D4 only (fit)
    inquire(file='ptb_dump_0',exist=ex)
-   if(ex.and.d4only) then
-      open(unit=11,file='ptb_dump_0',form='unformatted')
-      read(11) q
-      close(11)
-      qd4 = z - q  ! q from pop                s8          s9          a1          a2       beta_1/2 (orig 3.0,2.0)
-      call dftd4_dispersion(at,xyz,qd4,1.0d0,glob_par(2),glob_par(1),glob_par(3),glob_par(4),glob_par(5),glob_par(6),edisp)
-      write(*,'('' D4 dispersion energy      :'',f14.6)') edisp
-      open(unit=124,file='.EDISP')
-      write(124,'(F16.8)') edisp
-      close(124)
-      goto 9999
-   endif
+   !if(ex.and.d4only) then
+   !   open(unit=11,file='ptb_dump_0',form='unformatted')
+   !   read(11) q
+   !   close(11)
+   !   qd4 = z - q  ! q from pop                s8          s9          a1          a2       beta_1/2 (orig 3.0,2.0)
+   !   call dftd4_dispersion(at,xyz,qd4,1.0d0,glob_par(2),glob_par(1),glob_par(3),glob_par(4),glob_par(5),glob_par(6),edisp)
+   !   write(*,'('' D4 dispersion energy      :'',f14.6)') edisp
+   !   open(unit=124,file='.EDISP')
+   !   write(124,'(F16.8)') edisp
+   !   close(124)
+   !   goto 9999
+   !endif
 
    ndim=0
    call rdbas(bname)                      ! file: ~/.basis_vDZP
@@ -358,9 +357,9 @@ program gTB
    endif
 
    if(alp_ref(1).gt.0.and.prop.lt.2) prop = 2 ! switch on polar calc
-   if(energ)                         prop = 0
+   !if(energ)                         prop = 0
    if(stda)                          prop = 4
-   if(tmwr)                          prop = 5
+   !if(tmwr)                          prop = 5
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
@@ -395,50 +394,50 @@ program gTB
       endif
    endif
 
-   if (raman) then
-      allocate(mapping(6))
-      mapping(1)=1
-      mapping(2)=3
-      mapping(3)=6
-      mapping(4)=2
-      mapping(5)=4
-      mapping(6)=5
-      write(*,'(/,a)') "--- dALPHA/dR ---"
-      x=0.005_wp
-      call modbas(n,at,4)
-      do i=1,n
-         do j=1,3
-            xyz(j,i)=xyz(j,i)+x
-            call calcrab(n,at,xyz,rab)
-            call sint(n,ndim,at,xyz,rab,S,xnorm)       ! exact S
-            call dipint(n,ndim,at,xyz,rab,xnorm,pnt,D3)! dipole integrals
-            call pgtb(.false.,-2,n,ndim,nel,nopen,ihomo,at,chrg,xyz,z,rab,pnt,xnorm,S,D3,&
-            &               efield,ML1,ML2,psh,q,P,F,eps,wbo,dip,alpr)
-            xyz(j,i)=xyz(j,i)-2_wp*x
-            call calcrab(n,at,xyz,rab)
-            call sint(n,ndim,at,xyz,rab,S,xnorm)       ! exact S
-            call dipint(n,ndim,at,xyz,rab,xnorm,pnt,D3)! dipole integrals
-            call pgtb(.false.,-2,n,ndim,nel,nopen,ihomo,at,chrg,xyz,z,rab,pnt,xnorm,S,D3,&
-            &               efield,ML1,ML2,psh,q,P,F,eps,wbo,dip,alpl)
-            fdgrad(j,i,1:6)=(alpr(1:6)-alpl(1:6))/(2_wp*x)
-            xyz(j,i)=xyz(j,i)+x
-         enddo
-         write(*,'(a,i0)') "Calculated dalpha/dr for atom ", i
-      enddo
-      call calcrab(n,at,xyz,rab)
-      S = tmpmat
-      efield = 0
-      open(newunit=myunit, file="polgrad.PTB", status='REPLACE',form='FORMATTED',action='WRITE')
-      write(myunit,*) "$polgrad from PTB"
-      do j=1,6
-         do i=1,n
-            write(myunit,*) fdgrad(1:3,i,mapping(j))
-         enddo
-      enddo
-      close(myunit)
-      write(*,'(a,/)') "written dalpha/dr in TM format to 'polgrad.PTB'"
-      deallocate(mapping)
-   endif
+   !if (raman) then
+   !   allocate(mapping(6))
+   !   mapping(1)=1
+   !   mapping(2)=3
+   !   mapping(3)=6
+   !   mapping(4)=2
+   !   mapping(5)=4
+   !   mapping(6)=5
+   !   write(*,'(/,a)') "--- dALPHA/dR ---"
+   !   x=0.005_wp
+   !   call modbas(n,at,4)
+   !   do i=1,n
+   !      do j=1,3
+   !         xyz(j,i)=xyz(j,i)+x
+   !         call calcrab(n,at,xyz,rab)
+   !         call sint(n,ndim,at,xyz,rab,S,xnorm)       ! exact S
+   !         call dipint(n,ndim,at,xyz,rab,xnorm,pnt,D3)! dipole integrals
+   !         call pgtb(.false.,-2,n,ndim,nel,nopen,ihomo,at,chrg,xyz,z,rab,pnt,xnorm,S,D3,&
+   !         &               efield,ML1,ML2,psh,q,P,F,eps,wbo,dip,alpr)
+   !         xyz(j,i)=xyz(j,i)-2_wp*x
+   !         call calcrab(n,at,xyz,rab)
+   !         call sint(n,ndim,at,xyz,rab,S,xnorm)       ! exact S
+   !         call dipint(n,ndim,at,xyz,rab,xnorm,pnt,D3)! dipole integrals
+   !         call pgtb(.false.,-2,n,ndim,nel,nopen,ihomo,at,chrg,xyz,z,rab,pnt,xnorm,S,D3,&
+   !         &               efield,ML1,ML2,psh,q,P,F,eps,wbo,dip,alpl)
+   !         fdgrad(j,i,1:6)=(alpr(1:6)-alpl(1:6))/(2_wp*x)
+   !         xyz(j,i)=xyz(j,i)+x
+   !      enddo
+   !      write(*,'(a,i0)') "Calculated dalpha/dr for atom ", i
+   !   enddo
+   !   call calcrab(n,at,xyz,rab)
+   !   S = tmpmat
+   !   efield = 0
+   !   open(newunit=myunit, file="polgrad.PTB", status='REPLACE',form='FORMATTED',action='WRITE')
+   !   write(myunit,*) "$polgrad from PTB"
+   !   do j=1,6
+   !      do i=1,n
+   !         write(myunit,*) fdgrad(1:3,i,mapping(j))
+   !      enddo
+   !   enddo
+   !   close(myunit)
+   !   write(*,'(a,/)') "written dalpha/dr in TM format to 'polgrad.PTB'"
+   !   deallocate(mapping)
+   !endif
 
 
 ! SINGLE POINT PTB
@@ -458,29 +457,29 @@ program gTB
    endif
 
 ! ENERGY ONLY
-   if(energ) then
-      goto 9999   ! temporary exit for PTB-RPBE testing (ptb_energy does not work for whole PSE)
-      call system('cp ptb_dump_0 ptb_dump')
-      call ptb_energy(.true.,n,ndim,nopen,at,z,xyz,rab,q,psh,wbo,P,eref,etot)
-      open(unit=12,file='.data')
-!        write(12,*) eref/float(n),etot/float(n)
-      write(12,*) eref*10d0,etot*10d0
-      if(lgrad)then
-         f2 =10.0
-         do i=1,n
-            do j=1,3
-               write(12,*) f2*grad_ref(j,i),f2*grad(j,i)
-            enddo
-         enddo
-      endif
-      close(12)
-      open(unit=111,file='energy')
-      write(111,'(''$energy'')')
-      write(111,'('' 1      '',f16.8,''   99.9 99.9 99.9 99.9'')') etot
-      write(111,'(''$end'')')
-      close(111)
-      goto 9999
-   endif
+   !if(energ) then
+   !   goto 9999   ! temporary exit for PTB-RPBE testing (ptb_energy does not work for whole PSE)
+   !   call system('cp ptb_dump_0 ptb_dump')
+   !   call ptb_energy(.true.,n,ndim,nopen,at,z,xyz,rab,q,psh,wbo,P,eref,etot)
+   !   open(unit=12,file='.data')
+!  !      write(12,*) eref/float(n),etot/float(n)
+   !   write(12,*) eref*10d0,etot*10d0
+   !   if(lgrad)then
+   !      f2 =10.0
+   !      do i=1,n
+   !         do j=1,3
+   !            write(12,*) f2*grad_ref(j,i),f2*grad(j,i)
+   !         enddo
+   !      enddo
+   !   endif
+   !   close(12)
+   !   open(unit=111,file='energy')
+   !   write(111,'(''$energy'')')
+   !   write(111,'('' 1      '',f16.8,''   99.9 99.9 99.9 99.9'')') etot
+   !   write(111,'(''$end'')')
+   !   close(111)
+   !   goto 9999
+   !endif
 
 ! for RPBE-PTB
    if(prop.gt.0) then
