@@ -715,13 +715,7 @@ subroutine help
       "", &
       "-chrg <int>        specify systems total charge", &
       "-uhf <int>         specify systems #open shells", &
-      "-avcn              just calculate coordination numbers", &
-      "-apo               just printout shell pop for testing", &
-      "-polar/-alpha      calculate polarizibility", &
-      "-hyperpolar/-beta  calculate hyperpolarizibility", &
-   !"-energy            evaluate (electronic) energy", &
       "-stda              output stda/TM compatible format", &
-      "-nogtb             skip gTB calculation", &
       "-par <file>        read parameters from provided file", &
       "-bas <file>        read basis set from provided file", &
       "-test              more printout for testing and debugging", &
@@ -753,7 +747,7 @@ subroutine head
    write(*,*) '     original PTB model. The original PTB model is available at:'
    write(*,*) '                https://github.com/grimme-lab/ptb'
    write(*,*) '     The modified repository is available at:'
-   write(*,*) '                https://github.com/FlorianKleemiss/ptb'
+   write(*,*) '                https://github.com/AK-Kleemiss/ptb'
    write(*,*)
 
 end
