@@ -3,3 +3,9 @@
 *.o
 *.exe
 build/ptb
+*.vsidx
+.vs/ptb/v17/.wsuo
+*.db-shm
+*.db-wal
+*.opendb
+*.db

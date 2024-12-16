@@ -44,12 +44,11 @@ ccccccccccccccccccccccccccccccccccccccccccc
       do i=1,nmo 
          tmp(i,:)=tmp(i,:)*norm(i)
       enddo
-
       call sao2cao(nmo,tmp,cmo,nc,at)
-
-      do i=1,nmo 
-         tmp(i,:)=tmp(i,:)/norm(i)
-      enddo
+      
+      !do i=1,nmo 
+      !   tmp(i,:)=tmp(i,:)/norm(i)
+      !enddo
 
       nbf=ncao
       nprim=prim_npr
@@ -185,10 +184,10 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       do i=1, ncent
          iat=at(i)
          do j=1, bas_nsh(iat)
-         do iao=1,lladr(bas_lsh(j,iat))
-         k=k+1
-         lao(k)=ll(bas_lsh(j,iat))+iao
-         enddo
+            do iao=1,lladr(bas_lsh(j,iat))
+               k=k+1
+               lao(k)=ll(bas_lsh(j,iat))+iao
+            enddo
          enddo
       enddo
       
@@ -198,16 +197,13 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       trafo = 0.0d0 
 ! x2 
       trafo(1,1)=1./dsqrt(2.d0)*dsqrt(3.d0/2.d0)
-!      trafo(2,1)=0.408248290464D+00*sqrt(3./2.)
       trafo(2,1)=-0.50d0
 ! y2 
       trafo(1,2)=-1./dsqrt(2.d0)*dsqrt(3.d0/2.d0)
-!      trafo(2,2)=0.408248290464D+00*sqrt(3./2.)
       trafo(2,2)=-0.50d0
 ! z2
       trafo(1,3)=0.0d0
       trafo(2,3)=1.0d0
-!      trafo(2,3)=-0.816496580928D+00*sqrt(3./2.)
 c rest
       trafo(3,4)=1.0d0
       trafo(4,5)=1.0d0
@@ -216,6 +212,7 @@ c rest
       new=ncao-nbf
 
       if(new.eq.0) then
+         x=s
          return
       endif
 
