@@ -25,7 +25,7 @@
 
 subroutine pgtb(pr,prop,n,ndim,nel,nopen,homo,at,chrg,xyz,z,rab, &
 &               pnt,norm,S,D,efield,S1,S2,psh,pa,&
-&               P,H,eps,wbo,dip,alp)
+&               P,H,eps)
    use iso_fortran_env, only : wp => real64
    use parcom
    use bascom
@@ -66,9 +66,6 @@ subroutine pgtb(pr,prop,n,ndim,nel,nopen,homo,at,chrg,xyz,z,rab, &
    real(wp),intent(inout) :: P(ndim*(ndim+1)/2) ! density matrix
    real(wp),intent(inout) :: H(ndim*(ndim+1)/2) ! unperturbed Hamilton Matrix
    real(wp),intent(out)   :: eps(ndim)          ! eigenvalues
-   real(wp),intent(out)   :: wbo(n,n)           ! WBOs
-   real(wp),intent(out)   :: dip(3)             ! dipole moment
-   real(wp),intent(out)   :: alp(6)             ! dipole polarizability tensor
 
 !! ------------------------------------------------------------------------
 !  local

@@ -59,11 +59,7 @@ ccccccccccccccccccccccccccccccccccccccccccc
      .     status='replace')
 
 ! only print out virtuals below cutoff
-      nmomax=0
-      do i=1,nmo
-         if(eval(i).gt.mowrcut.and.nmomax.eq.0)nmomax=i-1
-      enddo
-      if(nmomax.eq.0) nmomax=nmo
+      nmomax=nmo
 
                     !***********
                     ! RHF case *
