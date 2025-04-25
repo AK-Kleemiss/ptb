@@ -173,7 +173,7 @@ contains
       integer, allocatable :: indices(:)
       integer :: i
 
-      integer(i8) :: days, hours, mins
+      integer :: days, hours, mins
       real(wp) :: seconds
 
       ! Stop timers if they are still running

@@ -1,6 +1,6 @@
 module purification_settings
    use gtb_accuracy, only: wp
-   use cuda_, only: initialize_ctx
+   !use cuda_, only: initialize_ctx
    implicit none
 
    !> Different calculation types
@@ -166,7 +166,7 @@ contains
 
    subroutine print_settings(self, out)
 
-      use cuda_, only: ctx
+      !use cuda_, only: ctx
       use metrics, only: thrs
 
       !> Purification settings holder
@@ -176,12 +176,12 @@ contains
       integer,  intent(in) :: out
 
       ! HEADER !
-      write(out,'(/,a)') repeat('*',72)
+      !write(out,'(/,a)') repeat('*',72)
       write(out,'(a,1x,a,1x,a)') repeat('*',26), "PURIFICATION MODE", repeat('*',27)
-      write(out,'(a)') repeat('*',72)
+      !write(out,'(a)') repeat('*',72)
 
-      write(out,'(2x,a)') "__SETTINGS__" 
-      write(out,'(2x,a)') "__general__"
+      !write(out,'(2x,a)') "__SETTINGS__" 
+      !write(out,'(2x,a)') "__general__"
       write(out,'(2x,a,6x)',advance='no') "Purification type:            "
       selectcase(self%type)
       case(mcweeny)
@@ -199,14 +199,14 @@ contains
             if (self%prlvl > 0) &
          write(out,'(2x,a, 8x, i0)') 'Iteration Cycles:           ', self%cycles
       endselect
-      write(out,'(2x,a,5x,L1)') "CUDA support:                  ", allocated(ctx)
-      if(self%prlvl > 1) then
-         write(out,'(2x,a,5x,L1)') "Development Mode:              ", self%dev
-      endif
-         write(out,'(2x,a,5x,i0)') "Print Level:                   ", self%prlvl
+      !write(out,'(2x,a,5x,L1)') "CUDA support:                  ", allocated(ctx)
+      !if(self%prlvl > 1) then
+      !   write(out,'(2x,a,5x,L1)') "Development Mode:              ", self%dev
+      !endif
+      !   write(out,'(2x,a,5x,i0)') "Print Level:                   ", self%prlvl
       
       if (self%prlvl > 0) then
-         write(out,'(/,2x,a)') "__metric__"
+         !write(out,'(/,2x,a)') "__metric__"
          write(out,'(2x,a,5x)',advance='no') "S power:                      "
          selectcase(self%metric%type)
          case(inv)
@@ -220,19 +220,19 @@ contains
          if (self%metric%iterative .and. self%prlvl > 1) &
          write(out,'(2x,a,5x,i0)')           "Number of cycles:             ", self%metric%cycles
       
-         write(out,'(/,2x,a)') "__chempot__"
+         !write(out,'(/,2x,a)') "__chempot__"
          write(out,'(2x,a,3x,f13.8)')        "Initial Chemical Potential:   ", self%chempot%guess
          if (self%prlvl > 1) &
          write(out,'(2x,a,5x,i0)')           "Number of cycles:             ", self%chempot%cycles
-
+!
       endif
 
-      if (self%prlvl > 0) then
-         write(out,'(/,2x,a)') "__thresholds_"
-         write(out,'(2x,a,3x,e13.6)')        "Threshold:                      ", thrs%normal
-      endif
+      !if (self%prlvl > 0) then
+      !   write(out,'(/,2x,a)') "__thresholds_"
+      write(out,'(2x,a,3x,e13.6)')        "Threshold:                      ", thrs%normal
+      !endif
 
-      write(out,'(/, a, /)') repeat('*',72)
+      write(out,'(a, /)') repeat('*',72)
 
    end subroutine print_settings
 end module purification_settings

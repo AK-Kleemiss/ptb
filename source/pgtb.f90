@@ -25,6 +25,7 @@ module pgtb_
    use purification_settings, only : tPurificationSet
    use metrics
    implicit none
+   public adjust_thresholds
 
 contains
 
@@ -38,7 +39,7 @@ contains
       use com
       use aescom
       use mocom ! fit only
-      use symmetry_mod, only: getsymmetry
+      !use symmetry_mod, only: getsymmetry
       implicit none
 
    !! ------------------------------------------------------------------------
@@ -226,32 +227,34 @@ contains
       Htmp = H
 
    ! MO match for fit
-      if(allocated(cmo_ref).and.prop.ge.0.and.prop.lt.4) then
-         call getsymmetry(pr,n,at,xyz,0.01d0,50,highsym) ! get PG to check for MO degen.
-         call momatch(pr,highsym,ndim,homo,0,S,eps,U)    ! which modifies match routine
-      endif
+      !if(allocated(cmo_ref).and.prop.ge.0.and.prop.lt.4) then
+      !   call getsymmetry(pr,n,at,xyz,0.01d0,50,highsym) ! get PG to check for MO degen.
+      !   call momatch(pr,highsym,ndim,homo,0,S,eps,U)    ! which modifies match routine
+      !endif
 
    ! stda
-      if(prop.eq.4) call printmos(n,at,xyz,ndim,homo,norm,2d0,eps,U) ! cut virt. > 2 Eh because very high lying gTB MOs are crap
-   ! TM
-      if(prop.eq.5) then
-         call wr_tm_mos(ndim,n,nel,at,nopen,ndim,eps,U)                              ! write for TM all mos (incl. virts!)
-   !     call fock2(n,ndim,at,xyz,z,rab,cns,S,SS,Vecp,Hdiag,scfpar,S1,S2,psh,pa,P,H) ! in the "third" SCF step using second F(P2)
-   !     call fmotrafo(ndim,homo,H,U)                                                ! detemine Fia max
-         open(unit=11,file='ptb_dump_0',form='unformatted')                          ! for the PTB-RPBE fit, write charges for D4
-         write(11) pa
-         close(11)
+      if(prop.eq.4) then
+       call printmos(n,at,xyz,ndim,homo,norm,2d0,eps,focc,U) ! cut virt. > 2 Eh because very high lying gTB MOs are crap
       endif
+   ! TM
+  !    if(prop.eq.5) then
+  !       call wr_tm_mos(ndim,n,nel,at,nopen,ndim,eps,U)                              ! write for TM all mos (incl. virts!)
+  ! !     call fock2(n,ndim,at,xyz,z,rab,cns,S,SS,Vecp,Hdiag,scfpar,S1,S2,psh,pa,P,H) ! in the "third" SCF step using second F(P2)
+  ! !     call fmotrafo(ndim,homo,H,U)                                                ! detemine Fia max
+  !       open(unit=11,file='ptb_dump_0',form='unformatted')                          ! for the PTB-RPBE fit, write charges for D4
+  !       write(11) pa
+  !       close(11)
+  !    endif
 
    ! just with field
-      if(sum(abs(efield)).gt.1.d-6) then
-         do j=1,3
-            Htmp(:)=Htmp(:)-efield(j)*D(:,j)  ! the field perturbation on unperturbed H
-         enddo
-         if(prop.ne.102) then  ! if this is not a beta calc, p,q,mu... are computed with field P
-            call solve2(2,ndim,nel,nopen,homo,eT,focc,Htmp,S,P,eps,U,fail) ! solve with efield
-         endif
-      endif
+   !   if(sum(abs(efield)).gt.1.d-6) then
+   !      do j=1,3
+   !         Htmp(:)=Htmp(:)-efield(j)*D(:,j)  ! the field perturbation on unperturbed H
+   !      enddo
+   !      if(prop.ne.102) then  ! if this is not a beta calc, p,q,mu... are computed with field P
+   !         call solve2(2,ndim,nel,nopen,homo,eT,focc,Htmp,S,P,eps,U,fail) ! solve with efield
+   !      endif
+   !   endif
 
    ! WBO
       if(prop.ge.0) call wiberg(n,ndim,at,rab,P,S,wbo)
@@ -370,7 +373,7 @@ contains
       real(wp),intent(inout)    :: SS(ndim*(ndim+1)/2)   ! scaled overlap maxtrix in SAO
       real(wp),intent(in)    :: Vecp(ndim*(ndim+1)/2) ! ECP ints
       real(wp),intent(in)    :: Hdiag(ndim)           ! diagonal of H0
-      real(wp),intent(in)    :: focc (ndim)           ! fractional occ.
+      real(wp),intent(inout)    :: focc (ndim)           ! fractional occ.
       real(wp),intent(in)    :: norm (ndim)           ! SAO normalization factors
       real(wp),intent(in)    :: pnt(3)                ! property ref point
       real(wp),intent(in)    :: eT                    ! el. temp.
@@ -393,10 +396,11 @@ contains
 
    !  local
       logical  :: fail, debug
+      integer,parameter  :: limit = 2
       integer  :: i,j,k,l,ish,ati,atj,ia,ib,jsh,ii,jj,lin,ij,li,lj,iter,iish,jjsh,mode
       real(wp),parameter :: au2ev = 27.2113957_wp
       real(wp) :: r,tmp,pol,hi,hj,hij,xk,t8,t9,qa,qb,keav,eh1,tmp2
-      real(wp) :: xiter(2),yiter(2),ziter(2),ssh,gap1,gap2
+      real(wp) :: xiter(limit),yiter(limit),ziter(limit),ssh,gap1,gap2
       real(wp) :: t0,t1,w0,w1
       real(wp), allocatable :: SSS(:)
       real(wp), allocatable :: vs(:),vd(:,:),vq(:,:)
@@ -409,13 +413,13 @@ contains
       call sint(n,ndim,at,xyz,rab,SSS,eps)
 
       ziter(1)=scfpar(4)
-      ziter(2)=1_wp
+      ziter(2:)=1_wp
       xiter(1)=scfpar(6)
-      xiter(2)=1_wp
+      xiter(2:)=1_wp
       yiter(1)=scfpar(7)
-      yiter(2)=1_wp
+      yiter(2:)=1_wp
 
-      do iter=1, 2         ! two "iterations": in the first, q (=pa) = q(EEQ) and NO P (=+U)
+      do iter=1, limit         ! two "iterations": in the first, q (=pa) = q(EEQ) and NO P (=+U)
 
          call shscalP(iter,n,at,psh,scal)
          call modbasd(n,at,scal)         ! scale exponents shell/atom-wise with psh dep.
@@ -564,25 +568,23 @@ contains
          if(              prop.lt.0) mode = -iter ! IR/Raman
 
 
-         debug = .true. 
+         !debug = .true. 
+         if(.not. allocated(thrs)) then
+            call adjust_thresholds(ndim, P)
+         endif
 
          ! Normal diagonalization !
          if (.not. allocated(pur)) then
             call solve2(mode,ndim,nel,nopen,homo,eT,focc,Hmat,S,P,eps,U,fail) 
-            call check_density(ndim, P, S, nel) ! check if computed density matrix valid 
+            !call check_density(ndim, P, S, nel) ! check if computed density matrix valid 
 
          ! Purification !
          else
-
-            call adjust_thresholds(ndim, P)
             call check_sparsity(pur%prlvl,ndim, Hmat)
-            stop
             if (pur%dev) then ! perform diagonalization in development regime
                write(stdout, '(a,1x,a,1x,a)') repeat('*', 40),'Solve',repeat('*',40)
                call solve2(mode,ndim,nel,nopen,homo,eT,focc,Hmat,S,P,eps,U,fail) 
-               call check_density(ndim, P, S, nel) ! check if computed density matrix valid
-               if (debug .or.  pr > 0) &
-                  call print_matrix(ndim, P, 'PTB density matrix') 
+               !call check_density(ndim, P, S, nel) ! check if computed density matrix valid
                write(stdout, '(a)') repeat('*', 87)
             endif
 
@@ -590,19 +592,19 @@ contains
             pur%nel = nel ! save number of electrons
             call pur%print(stdout)
             call purification(pur, ndim, Hmat, S, P2)
-            if (debug .or.  pr > 0) &
-               call print_matrix(ndim, P2, 'Purified density matrix') 
-            call check_density(ndim, P2, S, nel) ! check if computed density matrix valid 
-            if (pur%dev) then ! perform diagonalization in development regime
-               call analyze_results(ndim, P, P2, S, Hmat, n, pur%prlvl)
-            endif
+            !if (debug .or.  pr > 0) &
+            !   call print_matrix(ndim, P2, 'Purified density matrix') 
+            !call check_density(ndim, P2, S, nel) ! check if computed density matrix valid 
+            !if (pur%dev) then ! perform diagonalization in development regime
+            !   call analyze_results(ndim, P, P2, S, Hmat, n, pur%prlvl)
+            !endif
 
          endif
          
          if(fail) stop 'diag error'
 
          if(iter.eq.1) gap1 = (eps(homo+1)-eps(homo))*au2ev
-         if(iter.eq.2.and.pr)then
+         if(iter.ge.2.and.pr)then
             gap2 = (eps(homo+1)-eps(homo))*au2ev
             ii=max(homo-9,1)
             jj=min(homo+2,ndim)
@@ -1030,13 +1032,13 @@ contains
       use timer, only : tTimer
       implicit none
       integer mode,ndim,nel,nopen,homo
-      real*8 et
-      real*8 focc(ndim)
-      real*8 H(ndim*(ndim+1)/2)
-      real*8 S(ndim*(ndim+1)/2)
-      real*8 P(ndim*(ndim+1)/2)
-      real*8 e(ndim)
-      real*8 U(ndim,ndim)
+      real*8, intent(in) :: et
+      real*8, intent(inout) :: focc(ndim)
+      real*8, intent(in) :: H(ndim*(ndim+1)/2)
+      real*8, intent(in) :: S(ndim*(ndim+1)/2)
+      real*8, intent(in) :: P(ndim*(ndim+1)/2)
+      real*8, intent(inout) :: e(ndim)
+      real*8, intent(inout) :: U(ndim,ndim)
       logical fail
 
       integer(ik) :: info
@@ -1092,7 +1094,9 @@ contains
    ! end of diag case branch
       endif
 
-      if(info.ne.0) fail=.true.
+      if(info.ne.0) then
+         fail=.true.
+      endif 
 
       if(mode.ge.2)then ! only if SP calc and in 2. iter
    !        global shift to match DFT absolute orbital energies (this has no effect on anything in gTB)
@@ -1478,7 +1482,7 @@ contains
       do i=1,n
          call shellocc_ref(at(i),atocc) ! ref. atomic pop.
          tmp = 0d0
-         if(iter.eq.2) tmp = shell_resp(9,at(i),1)
+         if(iter.gt.2) tmp = shell_resp(9,at(i),1)
          do ish=1,bas_nsh(at(i))
             qa = atocc(ish)-psh(ish,i)
             scal(ish,i) = expscal(3,ish,at(i)) * (1d0 + tmp*qa)

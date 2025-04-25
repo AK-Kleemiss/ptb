@@ -1,11 +1,7 @@
-# --- Variables ---
-PROG = ../build/ptb_dev
-ACCEL = /pc2/users/m/mpatbf1/libm/
-OSTYPE = LINUXI
-WITH_DFTD4 = FALSE
+PROG = ../build/ptb
+WITH_DFTD4 = TRUE
 
-# --- Code-specific variables ---
-SOURCES = accuracy.f90 cuda_context.f90 timer.f90 la.f90 blas_level1.f90 blas_level2.f90 blas_level3.f90 lapack_eig.f90
+SOURCES = accuracy.f90 timer.f90 la.f90 blas_level1.f90 blas_level2.f90 blas_level3.f90 lapack_eig.f90
 $(foreach src, $(SOURCES), $(eval $(src) := $(patsubst %.f90, %.o, $(src))))
 
 MODULES= bascom.o parcom.o com.o thresholds.o cbascom.o mocom.o dftd4.o aescom.o \
@@ -14,15 +10,15 @@ MODULES= bascom.o parcom.o com.o thresholds.o cbascom.o mocom.o dftd4.o aescom.o
 CFILES= symmetry_i.o
 
 OBJS1 = matrix_ops.o metrics.o purification_settings.o norms.o  purification.o \
-		 rdcoord.o readl.o asym.o elem.o readl2.o readline.o prmat.o  timing.o echo.o solve.o rdstvint.o \
-       ints.o intpack.o pop.o rdmat.o fermi.o reorder.o bas.o occ.o dtrf2.o lin.o energy.o mrec.o \
-       cma.o dtrf3.o drsp.o mlpop.o calcrab.o symmetry.o pgtb.o eeq.o ncoord.o prdipole.o itabrow.o \
-       sscal.o cbas.o gauss.o printmos.o qsort.o rdtm.o shellocc_ref.o wr_control_atoms.o \
-       egtbcorr.o guess_qsh.o eptb.o symtranslib.o spinden.o camm.o json_output.o
+		rdcoord.o readl.o asym.o elem.o readl2.o readline.o prmat.o  timing.o echo.o solve.o rdstvint.o \
+        ints.o intpack.o pop.o rdmat.o fermi.o reorder.o bas.o occ.o dtrf2.o lin.o energy.o mrec.o \
+        cma.o dtrf3.o drsp.o mlpop.o calcrab.o pgtb.o eeq.o ncoord.o prdipole.o itabrow.o \
+        sscal.o cbas.o gauss.o printmos.o qsort.o rdtm.o shellocc_ref.o wr_control_atoms.o \
+        egtbcorr.o guess_qsh.o eptb.o symtranslib.o spinden.o camm.o json_output.o
 
 MAINFILES= main.o 
 
-OBJS = $(MODULES) $(CFILES) $(OBJS2) $(MAINFILES)
+OBJS = $(MODULES) $(CFILES) $(OBJS1) $(MAINFILES)
 #--------------------------------------------------------------------------
 ifeq ($(OS), Windows_NT)
   NAME := WINDOWS
@@ -48,9 +44,9 @@ ifeq ($(NAME),WINDOWS)
 	"$(MKLROOT)/lib/mkl_lapack95_lp64.lib" \
 	"$(MKLROOT)/lib/mkl_intel_lp64.lib" \
 	"$(MKLROOT)/lib/mkl_core.lib" \
-	"$(MKLROOT)\lib\mkl_intel_thread.lib" \
-	"$(MKLROOT)\..\..\2024.0\lib\libiomp5md.lib"
-	FFLAGS = -O3 -Qiopenmp
+	"$(MKLROOT)\lib\mkl_intel_thread.lib" 
+#	"$(MKLROOT)\..\..\2024.0\lib\libiomp5md.lib"
+	FFLAGS = -Od -traceback -Qiopenmp -nologo
 	CCFLAGS = -O -DLINUX
 endif
 ifeq ($(NAME),LINUX)
@@ -64,7 +60,7 @@ ifeq ($(NAME),LINUX)
 	    $(MKLROOT)/lib/intel64/libmkl_core.a \
 	    $(MKLROOT)/lib/intel64/libmkl_intel_thread.a \
 	    -Wl,--end-group -lpthread -lm
-	    FFLAGS = -O3 -align array64byte -fopenmp
+	    FFLAGS = -Og -g -align array64byte -fopenmp -qopenmp -traceback -nologo
 	    CCFLAGS = -O -DLINUX
 	else
 	    FC = gfortran
@@ -101,23 +97,25 @@ create_build_dir:
 #--------------------------------------------------------------------------
 # Setting the rules to make the object files:
 #--------------------------------------------------------------------------
+main.o: pgtb.o
+purification.o: purification_settings.o symmetry_i.o norms.o metrics.o
+pgtb.o: metrics.o purification_settings.o symmetry_i.o purification.o
+metrics.o: matrix_ops.o
+
 # implizite Regel zur Erzeugung von *.o aus *.F ausschalten
 %.o: %.F
 fortran.o : $(CUDA)/src/fortran.c
-	gcc $(CCFLAGS) -I$(CUDA)/src/ $(INC) -c  $(CUDA)/src/fortran.c
+	gcc $(CCFLAGS) -I$(CUDA)/src/ -c  $(CUDA)/src/fortran.c
 
 # aus *.f mache ein *.o
 %.o: %.f
-	@echo "making $@ from $<"
-	$(FC) $(FFLAGS) $(INC) -c $< -o $@
+	$(FC) $(FFLAGS) -c $< -o $@
 
 %.o: %.f90
-	@echo "making $@ from $<"
 	$(FC) $(FFLAGS) -c $< -o $@
 
 # aus *.c mache ein *.o
 %.o: %.c
-	@echo "making $@ from $<"
 	$(CC) $(CCFLAGS) -c $< -o $@
 
 # linken

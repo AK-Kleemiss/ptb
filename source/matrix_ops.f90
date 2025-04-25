@@ -43,8 +43,11 @@ contains
 
       !> Local variables
       integer :: i, iunit
-      real(wp) :: tmp(ndim,ndim)
+      real(wp), allocatable:: tmp(:,:)
       logical :: verbose
+
+      allocate(tmp(ndim,ndim))
+      tmp(:,:) = 0.0_wp
 
       ! get unit !
       if (present(unit)) then

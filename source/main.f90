@@ -10,7 +10,6 @@ program gTB
    use pgtb_
    use iso_fortran_env, only : wp => real64
    use purification_settings, only: tPurificationSet
-   use cuda_, only: initialize_ctx
    implicit none
 
    real(wp),allocatable :: xyz(:,:),rab(:),z(:), wbo(:,:), cn(:)
@@ -147,7 +146,7 @@ program gTB
       if(index(arg1,'-nogtb').ne.0) nogtb =.true. !
       !if(index(arg1,'-raman').ne.0) raman =.true. !
       !if(index(arg1,'-d4only').ne.0) d4only =.true. !
-      if(index(arg1,'-cuda').ne.0) call initialize_ctx()
+      !if(index(arg1,'-cuda').ne.0) call initialize_ctx()
       if(index(arg1,'-purify').ne.0) then ! purification modus
          allocate(pur)
       endif
@@ -244,14 +243,14 @@ program gTB
       rpbe=.true.
    endif
 
-   iunit = 3
-   if (allocated(pur)) then
-      inquire(file='.PUR', exist=ex)
-      if (ex) then
-         open(unit=iunit, file='.PUR', status='OLD',action='READ')
-         call pur%settings(iunit)
-      endif
-   endif
+   !iunit = 3
+   !if (allocated(pur)) then
+   !   inquire(file='.PUR', exist=ex)
+   !   if (ex) then
+   !      open(unit=iunit, file='.PUR', status='OLD',action='READ')
+   !      call pur%settings(iunit)
+   !   endif
+   !endif
 
 ! how many atoms?
    call rd0(fname,n)
@@ -301,7 +300,7 @@ program gTB
    nel=int(sum(z))-int(chrg)
 
 !     for PTB-RPBE D4 only (fit)
-   inquire(file='ptb_dump_0',exist=ex)
+   !inquire(file='ptb_dump_0',exist=ex)
    !if(ex.and.d4only) then
    !   open(unit=11,file='ptb_dump_0',form='unformatted')
    !   read(11) q
@@ -333,7 +332,8 @@ program gTB
 
 ! valence basis
    call setupbas (n,at,ndim)
-   write(*,*) 'basis setup done. Ndim',ndim
+   write(*,*) 'basis setup done.'
+   write(*,*) 'Ndim',ndim
 
 ! core basis
    call setupcbas0(n,at)
@@ -412,50 +412,50 @@ program gTB
       endif
    endif
 
-   if (raman) then
-      allocate(mapping(6))
-      mapping(1)=1
-      mapping(2)=3
-      mapping(3)=6
-      mapping(4)=2
-      mapping(5)=4
-      mapping(6)=5
-      write(*,'(/,a)') "--- dALPHA/dR ---"
-      x=0.005_wp
-      call modbas(n,at,4)
-      do i=1,n
-         do j=1,3
-            xyz(j,i)=xyz(j,i)+x
-            call calcrab(n,at,xyz,rab)
-            call sint(n,ndim,at,xyz,rab,S,xnorm)       ! exact S
-            call dipint(n,ndim,at,xyz,rab,xnorm,pnt,D3)! dipole integrals
-            call pgtb(.false.,-2,n,ndim,nel,nopen,ihomo,at,chrg,xyz,z,rab,pnt,xnorm,S,D3,&
-            &               efield,ML1,ML2,psh,q,P,F,eps,wbo,dip,alpr, pur)
-            xyz(j,i)=xyz(j,i)-2_wp*x
-            call calcrab(n,at,xyz,rab)
-            call sint(n,ndim,at,xyz,rab,S,xnorm)       ! exact S
-            call dipint(n,ndim,at,xyz,rab,xnorm,pnt,D3)! dipole integrals
-            call pgtb(.false.,-2,n,ndim,nel,nopen,ihomo,at,chrg,xyz,z,rab,pnt,xnorm,S,D3,&
-            &               efield,ML1,ML2,psh,q,P,F,eps,wbo,dip,alpl, pur)
-            fdgrad(j,i,1:6)=(alpr(1:6)-alpl(1:6))/(2_wp*x)
-            xyz(j,i)=xyz(j,i)+x
-         enddo
-         write(*,'(a,i0)') "Calculated dalpha/dr for atom ", i
-      enddo
-      call calcrab(n,at,xyz,rab)
-      S = tmpmat
-      efield = 0
-      open(newunit=myunit, file="polgrad.PTB", status='REPLACE',form='FORMATTED',action='WRITE')
-      write(myunit,*) "$polgrad from PTB"
-      do j=1,6
-         do i=1,n
-            write(myunit,*) fdgrad(1:3,i,mapping(j))
-         enddo
-      enddo
-      close(myunit)
-      write(*,'(a,/)') "written dalpha/dr in TM format to 'polgrad.PTB'"
-      deallocate(mapping)
-   endif
+   !if (raman) then
+   !   allocate(mapping(6))
+   !   mapping(1)=1
+   !   mapping(2)=3
+   !   mapping(3)=6
+   !   mapping(4)=2
+   !   mapping(5)=4
+   !   mapping(6)=5
+   !   write(*,'(/,a)') "--- dALPHA/dR ---"
+   !   x=0.005_wp
+   !   call modbas(n,at,4)
+   !   do i=1,n
+   !      do j=1,3
+   !         xyz(j,i)=xyz(j,i)+x
+   !         call calcrab(n,at,xyz,rab)
+   !         call sint(n,ndim,at,xyz,rab,S,xnorm)       ! exact S
+   !         call dipint(n,ndim,at,xyz,rab,xnorm,pnt,D3)! dipole integrals
+   !         call pgtb(.false.,-2,n,ndim,nel,nopen,ihomo,at,chrg,xyz,z,rab,pnt,xnorm,S,D3,&
+   !         &               efield,ML1,ML2,psh,q,P,F,eps,wbo,dip,alpr, pur)
+   !         xyz(j,i)=xyz(j,i)-2_wp*x
+   !         call calcrab(n,at,xyz,rab)
+   !         call sint(n,ndim,at,xyz,rab,S,xnorm)       ! exact S
+   !         call dipint(n,ndim,at,xyz,rab,xnorm,pnt,D3)! dipole integrals
+   !         call pgtb(.false.,-2,n,ndim,nel,nopen,ihomo,at,chrg,xyz,z,rab,pnt,xnorm,S,D3,&
+   !         &               efield,ML1,ML2,psh,q,P,F,eps,wbo,dip,alpl, pur)
+   !         fdgrad(j,i,1:6)=(alpr(1:6)-alpl(1:6))/(2_wp*x)
+   !         xyz(j,i)=xyz(j,i)+x
+   !      enddo
+   !      write(*,'(a,i0)') "Calculated dalpha/dr for atom ", i
+   !   enddo
+   !   call calcrab(n,at,xyz,rab)
+   !   S = tmpmat
+   !   efield = 0
+   !   open(newunit=myunit, file="polgrad.PTB", status='REPLACE',form='FORMATTED',action='WRITE')
+   !   write(myunit,*) "$polgrad from PTB"
+   !   do j=1,6
+   !      do i=1,n
+   !         write(myunit,*) fdgrad(1:3,i,mapping(j))
+   !      enddo
+   !   enddo
+   !   close(myunit)
+   !   write(*,'(a,/)') "written dalpha/dr in TM format to 'polgrad.PTB'"
+   !   deallocate(mapping)
+   !endif
 
 
 ! SINGLE POINT PTB
@@ -500,58 +500,58 @@ program gTB
    !endif
 
 ! for RPBE-PTB
-   if(prop.gt.0) then
-      qd4 = z - q  ! q from pop                s8          s9          a1          a2       beta_1/2 (orig 3.0,2.0)
-      call dftd4_dispersion(at,xyz,qd4,1.0d0,glob_par(2),glob_par(1),glob_par(3),glob_par(4),glob_par(5),glob_par(6),edisp)
-      write(*,'('' D4 dispersion energy      :'',f14.6)') edisp
-      open(unit=124,file='.EDISP')
-      write(124,'(F16.8)') edisp
-      close(124)
-   endif
-
-   if(rdref.and.ok_ekin)then
-      call tint(n,ndim,at,xyz,rab,tmpmat,xnorm)
-      call energy(ndim,tmpmat,P,ekin)
-      write(*,'('' total energy (wo disp,DFT):'',2f14.6)') eref
-      write(*,'('' kinetic energy (calc/DFT) :'',2f14.6)') ekin,ekinref
-   endif
-
-   if(prop.gt.0) then
-      call secint(n,ndim,at,xyz,rab,xnorm,pnt,D3)! R^2 integrals
-      call secmom(n,ndim,xyz,z,xnorm,P,D3,pnt,scndmom)
-      if(rdref) call secmom(n,ndim,xyz,z,xnorm,Pref,D3,pnt,scndmom_ref)
-   endif
+   !if(prop.gt.0) then
+   !   qd4 = z - q  ! q from pop                s8          s9          a1          a2       beta_1/2 (orig 3.0,2.0)
+   !   call dftd4_dispersion(at,xyz,qd4,1.0d0,glob_par(2),glob_par(1),glob_par(3),glob_par(4),glob_par(5),glob_par(6),edisp)
+   !   write(*,'('' D4 dispersion energy      :'',f14.6)') edisp
+   !   open(unit=124,file='.EDISP')
+   !   write(124,'(F16.8)') edisp
+   !   close(124)
+   !endif
+!
+   !if(rdref.and.ok_ekin)then
+   !   call tint(n,ndim,at,xyz,rab,tmpmat,xnorm)
+   !   call energy(ndim,tmpmat,P,ekin)
+   !   write(*,'('' total energy (wo disp,DFT):'',2f14.6)') eref
+   !   write(*,'('' kinetic energy (calc/DFT) :'',2f14.6)') ekin,ekinref
+   !endif
+!
+   !if(prop.gt.0) then
+   !   call secint(n,ndim,at,xyz,rab,xnorm,pnt,D3)! R^2 integrals
+   !   call secmom(n,ndim,xyz,z,xnorm,P,D3,pnt,scndmom)
+   !   if(rdref) call secmom(n,ndim,xyz,z,xnorm,Pref,D3,pnt,scndmom_ref)
+   !endif
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! OUTPUT
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 !     compute NCI fragments (for artificial CT check)
-   fragchrg=0
-   do i=1,n
-      fragchrg(molvec(i))=fragchrg(molvec(i))-q(i)+z(i)
-   enddo
-
-   write(*,'(/,''     ------  PTB results ------'')')
-   write(*,'(''  # element  Z   pop.                shell populations'')')
-   do i=1,n
-      ns = bas_nsh(at(i))
-      floats(1:ns)=psh(1:ns,i)
-      write(*,'(i3,5x,a2,f5.1,f8.4,5x,10f7.3,5x)') i,asym(at(i)),z(i),q(i),floats(1:ns)
-   enddo
-   if(molcount.gt.1) write(*,*) 'CT cal',fragchrg
-   call prwbo(n,at,wbo)
-   call prdipole(dip)
-   call prsec(scndmom)
-   if(prop.eq.3) write(*,'(''polarizability computed with beta-parameterized response correction!'')')
-   if(prop.eq.2) call prpolar(alp)
-   if(prop.eq.3) call prbeta (beta)
-
-   ! Write a .json file with the results, containing the same information as the .out file
-   if (json) then
-      call write_json(jsonfile, n, at, z, q, wbo, dip)
-      write(*,'(a,a,a)') "--- Property file in JSON format written to: ", trim(adjustl(jsonfile)), " ---"
-   endif
+   !fragchrg=0
+   !do i=1,n
+   !   fragchrg(molvec(i))=fragchrg(molvec(i))-q(i)+z(i)
+   !enddo
+!
+   !write(*,'(/,''     ------  PTB results ------'')')
+   !write(*,'(''  # element  Z   pop.                shell populations'')')
+   !do i=1,n
+   !   ns = bas_nsh(at(i))
+   !   floats(1:ns)=psh(1:ns,i)
+   !   write(*,'(i3,5x,a2,f5.1,f8.4,5x,10f7.3,5x)') i,asym(at(i)),z(i),q(i),floats(1:ns)
+   !enddo
+   !if(molcount.gt.1) write(*,*) 'CT cal',fragchrg
+   !call prwbo(n,at,wbo)
+   !call prdipole(dip)
+   !call prsec(scndmom)
+   !if(prop.eq.3) write(*,'(''polarizability computed with beta-parameterized response correction!'')')
+   !if(prop.eq.2) call prpolar(alp)
+   !if(prop.eq.3) call prbeta (beta)
+!
+   !! Write a .json file with the results, containing the same information as the .out file
+   !if (json) then
+   !   call write_json(jsonfile, n, at, z, q, wbo, dip)
+   !   write(*,'(a,a,a)') "--- Property file in JSON format written to: ", trim(adjustl(jsonfile)), " ---"
+   !endif
 
 888 continue
 ! DFT reference exists

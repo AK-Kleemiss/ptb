@@ -127,6 +127,10 @@ contains
       !> Number of electrons
       integer, intent(in) :: nel
 
+      if(.not. allocated(thrs)) then
+         call adjust_thresholds_dp(ndim, P)
+      endif
+
       ! Nel check !
       if (abs(get_nel(ndim,P,S)) - nel > thrs%normal) &
          error stop "wrong Nel, check P"
@@ -153,12 +157,16 @@ contains
       !> Number of electrons
       integer, intent(in) :: nel
 
-      !> Locals
-      logical :: debug = .true.
+      if(.not. allocated(thrs)) then
+         call adjust_thresholds_dp(ndim, P)
+      endif
 
-      if (debug) &
-         write(stdout,'(a, 1x, i0, a, 1x, f18.8, 2x)') &
-            'nel:', nel, ', nel_calc:', get_nel(ndim,P,S)
+      !> Locals
+      !logical :: debug = .true.
+
+      !if (debug) &
+      !   write(stdout,'(a, 1x, i0, a, 1x, f18.8, 2x)') &
+      !      'nel:', nel, ', nel_calc:', get_nel(ndim,P,S)
 
       ! Nel check !
       if (abs(get_nel(ndim,P,S)) - nel > thrs%normal) then
@@ -184,7 +192,9 @@ contains
       real(wp), intent(in) :: S(ndim,ndim) 
 
       !> Product of P*S
-      real(wp) :: PS(ndim,ndim) 
+      real(wp), allocatable :: PS(:,:) 
+
+      allocate(PS(ndim,ndim))
       
       call la_gemm(P, S, PS) 
       nel = trace(PS)
@@ -198,21 +208,10 @@ contains
 
       !> Number of basis functions
       integer, intent(in) :: ndim
-      
-      !> Density Matrix
       real(wp), intent(in) :: Psym(ndim*(ndim+1)/2)
-      
-      !> Overlap matrix
       real(wp), intent(in) :: Ssym(ndim*(ndim+1)/2) 
-      
-      !> Overlap matrix
-      real(wp) :: S(ndim,ndim) 
-      
-      !> Density Matrix
-      real(wp) :: P(ndim,ndim)
-      
-      !> Product of P*S
-      real(wp) :: PS(ndim,ndim) 
+      real(wp), allocatable :: S(:,:), P(:,:), PS(:,:)
+      allocate(S(ndim, ndim), P(ndim, ndim), PS(ndim, ndim))
 
       call blowsym(ndim, Psym, P)
       call blowsym(ndim, Ssym, S)
@@ -235,8 +234,9 @@ contains
       real(wp), intent(in) :: H(ndim,ndim) 
       
       !> Product of P*S
-      real(wp) :: PH(ndim,ndim) 
-      
+      real(wp), allocatable :: PH(:,:) 
+
+      allocate(PH(ndim,ndim))     
 
       call la_gemm(P, H, PH) 
       E = trace(PH)
@@ -257,9 +257,9 @@ contains
       real(wp), intent(in) :: Hsym(ndim*(ndim+1)/2) 
       
       !> Locals
-      real(wp) :: H(ndim,ndim) 
-      real(wp) :: P(ndim,ndim)
-      real(wp) :: PH(ndim,ndim) 
+      real(wp), allocatable :: H(:,:) 
+      real(wp), allocatable :: P(:,:)
+      real(wp), allocatable :: PH(:,:) 
 
       call blowsym(ndim, Psym, P)
       call blowsym(ndim, Hsym, H)
@@ -283,8 +283,10 @@ contains
       real(wp), intent(in), optional :: S(ndim,ndim)
 
       !> Local variables
-      real(wp), dimension(ndim,ndim) :: matmat, mm2
+      real(wp), allocatable :: matmat(:,:), mm2(:,:)
       real(wp) :: frob_diff
+
+      allocate(matmat(ndim, ndim), mm2(ndim, ndim))
       
       matmat = 0.0_wp 
       mm2 = 0.0_wp
@@ -317,18 +319,18 @@ contains
       real(wp), intent(in), optional :: S(ndim*(ndim+1)/2)
 
       !> Buffer variables
-      real(wp), dimension(ndim, ndim) :: Sdum, matblowed, matmat, mm2
+      real(wp), allocatable :: Sdum(:,:), matblowed(:,:), matmat(:,:), mm2(:,:)
       real(wp) :: frob_diff
       real(wp), external :: dlange
       real(wp), allocatable :: work(:)
 
-      allocate(work(ndim))
+      allocate(work(ndim), Sdum(ndim, ndim), matblowed(ndim, ndim), mm2(ndim, ndim), matmat(ndim, ndim))
       
       if(present(S)) &
          & call blowsym(ndim, S, Sdum)
       call blowsym(ndim, mat, matblowed)
       matmat=0.0_wp 
-      
+
       ! dim check !
       if (size(matmat, 2) /= size(matblowed, 1)) then
          error stop "Error: Dimensions do not match for multiplication."
@@ -425,7 +427,7 @@ contains
       nzeros = count(abs(mat) < trunc)
       ratio = real(nzeros)/real(ndim*ndim)
       if (pr > 0) &
-         write(stdout, '(a, 2x, f5.2, a)') 'Sparisty:',ratio * 100, '%'
+         write(stdout, '(a, 2x, f5.2, a)') 'Sparsity:',ratio * 100, '%'
       
       if (present(sparse)) &
          sparse = ratio > 0.9_wp

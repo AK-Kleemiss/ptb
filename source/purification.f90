@@ -45,8 +45,10 @@ contains
       !> Local variables
       type(tTimer) :: timer_purification
 
-      real(wp), dimension(ndim, ndim) :: Hmat, Smat, X, purified
+      real(wp), allocatable :: Hmat(:,:), Smat(:,:), X(:,:), purified(:,:)
       integer :: i, j
+
+      allocate(purified(ndim,ndim), Hmat(ndim,ndim), Smat(ndim,ndim), X(ndim,ndim), identity(ndim,ndim), source=0.0_wp)
 
       ! start timer !
       call timer_purification%new(2)
@@ -59,7 +61,6 @@ contains
       call blowsym(ndim, S, Smat)
 
       ! create identity matrix !
-      allocate(identity(ndim,ndim), source=0.0_wp)
       do i=1,ndim
          identity(i,i) = 1.0_wp
       enddo
@@ -93,20 +94,22 @@ contains
       real(wp), intent(in) :: S(ndim,ndim)
 
       !> Transformation matrix
-      real(wp) :: X(ndim,ndim)
+      real(wp), allocatable :: X(:,:)
 
       !> Local variables
 
       logical :: debug  ! debugging mode
-      real(wp), dimension(ndim, ndim) :: V, atmp, D, atmp2 ! buffer matrix
+      real(wp), allocatable :: V(:,:), atmp(:,:), D(:,:), atmp2(:,:) ! buffer matrix
       real(wp) :: w(ndim) ! eigenvalues
       integer(ik) :: info ! execution status
       integer(ik) :: i
-      real(wp), dimension(ndim) :: s_infinity, s_2 ! different norms
+      real(wp), allocatable :: s_infinity(:), s_2(:) ! different norms
 
-      real(wp), dimension(ndim,ndim) :: XsX, check ! buffer for iterations
+      real(wp), allocatable :: XsX(:,:), check(:,:) ! buffer for iterations
       integer :: cycles, type, pr
 
+      allocate(X(ndim,ndim), atmp(ndim,ndim), atmp2(ndim,ndim), XsX(ndim,ndim), D(ndim,ndim), check(ndim,ndim))
+      allocate(V(ndim,ndim), s_infinity(ndim), s_2(ndim))
       
       debug = .false.
       V = S ! duplicate S
@@ -255,12 +258,14 @@ contains
       integer :: i ! counters
       integer :: cycles
       type(tTimer) :: timer_chempot_iteration
-      real(wp), dimension(ndim,ndim) :: guess
+      real(wp), allocatable :: guess(:,:)
       integer :: type, pr
       logical :: debug
       
       real(wp) :: lower_bound, upper_bound, incr
       logical :: is_lower_bound, is_upper_bound, bisection
+
+      allocate(guess(ndim, ndim))
 
       ! Intialization !
       type = pur%type 
@@ -374,8 +379,10 @@ contains
 
       !> Locals
       integer :: type_, pr, metric
-      real(wp), dimension(ndim,ndim) :: term1, term2, term3, term4, term5
+      real(wp), allocatable :: term1(:,:), term2(:,:), term3(:,:), term4(:,:), term5(:,:)
       logical :: debug = .false.
+
+      allocate(term1(ndim, ndim), term2(ndim, ndim), term3(ndim, ndim), term4(ndim, ndim), term5(ndim, ndim))
 
       type_ = pur%type
       metric = pur%metric%type
@@ -455,9 +462,11 @@ contains
       !> Locals
       integer :: cycles
       integer :: i, pr
-      real(wp), dimension(ndim,ndim) :: term1, term2, term3, guess2
+      real(wp), allocatable :: term1(:,:), term2(:,:), term3(:,:), guess2(:,:)
       real(wp) :: norm
       logical :: debug
+
+      allocate(term1(ndim, ndim), term2(ndim, ndim), term3(ndim, ndim), guess2(ndim, ndim))
       
       debug = .false.
       cycles = pur%cycles
@@ -528,9 +537,11 @@ contains
 
       !> Locals
       integer :: i, cycles, iter_type
-      real(wp), dimension(ndim,ndim) :: term1, term2, term3, term4, X
+      real(wp), allocatable :: term1(:,:), term2(:,:), term3(:,:), term4(:,:), X(:,:)
       real(wp) :: norm
       logical :: debug = .false.
+
+      allocate(term1(ndim, ndim), term2(ndim, ndim), term3(ndim, ndim), term4(ndim, ndim), X(ndim, ndim))
 
       cycles = pur%cycles
       pr = pur%prlvl
@@ -620,7 +631,9 @@ contains
       !> Locals
       logical :: debug 
       integer :: metric_type, pr
-      real(wp), dimension(ndim,ndim) :: tmp
+      real(wp), allocatable :: tmp(:,:), tmp2(:,:)
+
+      allocate(tmp(ndim, ndim), tmp2(ndim, ndim))
 
       debug = .false.
       pr = pur%prlvl
@@ -629,12 +642,14 @@ contains
       case(inv_sqrt)
          if (pr > 1) &
             write(stdout, '(/, a, /)') 'Density matrix via S^-0.5'
-         call la_gemm(identity-sign_, metric, tmp, pr=pr)
+         tmp2 = identity-sign_
+         call la_gemm(tmp2, metric, tmp, pr=pr)
          call la_gemm(metric, tmp, P, alpha=0.5_wp, pr=pr)
       case(inv)
          if (pr > 1) &
             write(stdout, '(/, a, /)') 'Density matrix via S^-1'
-         call la_gemm(identity-sign_, metric, P, alpha=0.5_wp, pr=pr)
+         tmp2 = identity-sign_
+         call la_gemm(tmp2, metric, P, alpha=0.5_wp, pr=pr)
       end select
 
       if (debug) then
@@ -673,9 +688,11 @@ contains
       real(wp), dimension(:), allocatable, save :: eigenvalues
       integer(ik) :: pr, info, i, j, k, cycles
       real(wp) :: nelcalc, sum_, lower_bound, upper_bound, incr, nel
-      real(wp), dimension(ndim) :: eigguess
-      real(wp), dimension(ndim, ndim) :: eigval, sign_, tmp
+      real(wp), allocatable :: eigguess(:)
+      real(wp), allocatable :: eigval(:, :), sign_(:, :), tmp(:, :)
       logical :: debug, is_lower_bound, is_upper_bound, bisection
+
+      allocate(sign_(ndim, ndim), tmp(ndim, ndim), eigguess(ndim), eigval(ndim, ndim))
 
       pr = pur%prlvl
       eigval = 0.0_wp

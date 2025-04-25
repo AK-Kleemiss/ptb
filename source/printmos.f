@@ -15,14 +15,14 @@ ccccccccccccccccccccccccccccccccccccccccccc
 ! ipao(nbf)    : # primitives in contracted AO 
 ! ibf(ncent)   : # of contracted AOs on atom
 
-      subroutine printmos(nc,at,xyz,nmo,homo,norm,mowrcut,eval,occ,tmp)
+      subroutine printmos(nc,at,xyz,nmo,homo,norm_,mowrcut,eval,occ,tmp)
 
       use bascom
       implicit none
 
       integer, intent ( in ) :: nmo,nc,at(nc),homo
       real*8,  intent ( in ) :: xyz(3,nc)
-      real*8,  intent ( in ) :: norm(nmo)    
+      real*8,  intent ( in ) :: norm_(nmo)    
       real*8,  intent ( in ) :: mowrcut
       real*8,  intent ( in ) :: eval(nmo)
       real*8,  intent ( in ) :: occ(nmo)
@@ -40,9 +40,17 @@ ccccccccccccccccccccccccccccccccccccccccccc
       real*8,allocatable :: cmo(:,:)
 
       allocate(cmo(ncao,nmo))
+
+      !Check for the sizes of matrizes
+      if (size(tmp, 2) /= size(norm_, 1)) then
+         error stop "Error: Dimensions do not match for multiplication."
+      endif
+      if (size(tmp, 1) /= nmo) then
+         error stop "Error: Dimensions do not match for multiplication."
+      endif
   
       do i=1,nmo 
-         tmp(i,:)=tmp(i,:)*norm(i)
+         tmp(i,:)=tmp(i,:)*norm_(i)
       enddo
       call sao2cao(nmo,tmp,cmo,nc,at)
       
