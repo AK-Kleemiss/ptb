@@ -7,8 +7,10 @@ program gTB
    use mocom    ! ref MOs for fit and momatch value
    use dftd4
    use json_output, only: write_json
-
+   use pgtb_
    use iso_fortran_env, only : wp => real64
+   use purification_settings, only: tPurificationSet
+   use cuda_, only: initialize_ctx
    implicit none
 
    real(wp),allocatable :: xyz(:,:),rab(:),z(:), wbo(:,:), cn(:)
@@ -26,7 +28,7 @@ program gTB
    integer ,allocatable :: dgen(:)
    integer ,allocatable :: ict(:,:)
 
-   integer n
+   integer :: n, iunit
    integer ndim
    integer nopen
    integer na,nb,nel,ihomo
@@ -36,7 +38,7 @@ program gTB
    integer ntrans
    integer myunit
    integer molcount,idum(100),tenmap(6)
-   integer i,j,k,l,m,ns,nf,nn,lin,llao(4)
+   integer i,j,k,l,m,ns,nf,nn,lin,llao(4), nl
    data llao/1,3,5,7 /
    real(wp) chrg ! could be fractional for model systems
 
@@ -55,13 +57,16 @@ program gTB
    real(wp),parameter :: zero = 0_wp
    character*2 asym
    character*80 str(10)
-   logical ex,fail,wrapo,test,test2,tmwr,dgrad,raman_fit,ok_ekin,energ,raman
-   logical stda,acn,rdref,nogtb,ok,rpbe,fitshellq,ldum,lgrad
-   logical calc_ptb_grad,d4only
+   logical :: ex,fail,wrapo,test,test2,tmwr,dgrad,raman_fit,ok_ekin,energ,raman
+   logical :: stda,acn,rdref,nogtb,ok,rpbe,fitshellq,ldum,lgrad
+   logical :: calc_ptb_grad,d4only, logicals(10)
    integer TID, OMP_GET_NUM_THREADS, OMP_GET_THREAD_NUM, nproc
 
    logical                 :: json = .false.
    character(len=256)      :: fname,pname,bname,jsonfile,atmp,arg1
+
+   !> Handle purification
+   type(tPurificationSet), allocatable :: pur
 
    call timing(t00,w00)
 
@@ -142,6 +147,10 @@ program gTB
       if(index(arg1,'-nogtb').ne.0) nogtb =.true. !
       !if(index(arg1,'-raman').ne.0) raman =.true. !
       !if(index(arg1,'-d4only').ne.0) d4only =.true. !
+      if(index(arg1,'-cuda').ne.0) call initialize_ctx()
+      if(index(arg1,'-purify').ne.0) then ! purification modus
+         allocate(pur)
+      endif
       if(index(arg1,'-json').ne.0) then
          json =.true.
          call getarg(i+1,atmp)
@@ -155,12 +164,12 @@ program gTB
       endif
       if(index(arg1,'-chrg').ne.0)then
          call getarg(i+1,atmp)
-         call readline(atmp,floats,str,ns,nf)
+         call readline(atmp, floats, str, logicals, ns, nf, nl)
          chrg=floats(1)
       endif
       if(index(arg1,'-uhf').ne.0)then
          call getarg(i+1,atmp)
-         call readline(atmp,floats,str,ns,nf)
+         call readline(atmp, floats, str, logicals, ns, nf, nl)
          nopen=floats(1)
       endif
    enddo
@@ -206,7 +215,7 @@ program gTB
       open(unit=1,file='.CHRG')
       read(1,'(a)')atmp
       close(1)
-      call readline(atmp,floats,str,ns,nf)
+      call readline(atmp, floats, str, logicals, ns, nf, nl)
       chrg=floats(1)
    endif
 ! electric field
@@ -216,7 +225,7 @@ program gTB
       open(unit=1,file='.EFIELD')
       read(1,'(a)')atmp
       close(1)
-      call readline(atmp,floats,str,ns,nf)
+      call readline(atmp, floats, str, logicals, ns, nf, nl)
       if(nf.lt.3) stop '.EFIELD read error'
       efield(1:3)=floats(1:3)
       write(*,'(''.EFIELD :'',3f12.6)') efield
@@ -226,13 +235,22 @@ program gTB
       open(unit=1,file='.UHF')
       read(1,'(a)')atmp
       close(1)
-      call readline(atmp,floats,str,ns,nf)
+      call readline(atmp, floats, str, logicals, ns, nf, nl)
       nopen=int(floats(1))
    endif
    inquire(file='.RPBE',exist=ex)
    if(ex)then
       tmwr=.true.
       rpbe=.true.
+   endif
+
+   iunit = 3
+   if (allocated(pur)) then
+      inquire(file='.PUR', exist=ex)
+      if (ex) then
+         open(unit=iunit, file='.PUR', status='OLD',action='READ')
+         call pur%settings(iunit)
+      endif
    endif
 
 ! how many atoms?
@@ -394,57 +412,57 @@ program gTB
       endif
    endif
 
-   !if (raman) then
-   !   allocate(mapping(6))
-   !   mapping(1)=1
-   !   mapping(2)=3
-   !   mapping(3)=6
-   !   mapping(4)=2
-   !   mapping(5)=4
-   !   mapping(6)=5
-   !   write(*,'(/,a)') "--- dALPHA/dR ---"
-   !   x=0.005_wp
-   !   call modbas(n,at,4)
-   !   do i=1,n
-   !      do j=1,3
-   !         xyz(j,i)=xyz(j,i)+x
-   !         call calcrab(n,at,xyz,rab)
-   !         call sint(n,ndim,at,xyz,rab,S,xnorm)       ! exact S
-   !         call dipint(n,ndim,at,xyz,rab,xnorm,pnt,D3)! dipole integrals
-   !         call pgtb(.false.,-2,n,ndim,nel,nopen,ihomo,at,chrg,xyz,z,rab,pnt,xnorm,S,D3,&
-   !         &               efield,ML1,ML2,psh,q,P,F,eps,wbo,dip,alpr)
-   !         xyz(j,i)=xyz(j,i)-2_wp*x
-   !         call calcrab(n,at,xyz,rab)
-   !         call sint(n,ndim,at,xyz,rab,S,xnorm)       ! exact S
-   !         call dipint(n,ndim,at,xyz,rab,xnorm,pnt,D3)! dipole integrals
-   !         call pgtb(.false.,-2,n,ndim,nel,nopen,ihomo,at,chrg,xyz,z,rab,pnt,xnorm,S,D3,&
-   !         &               efield,ML1,ML2,psh,q,P,F,eps,wbo,dip,alpl)
-   !         fdgrad(j,i,1:6)=(alpr(1:6)-alpl(1:6))/(2_wp*x)
-   !         xyz(j,i)=xyz(j,i)+x
-   !      enddo
-   !      write(*,'(a,i0)') "Calculated dalpha/dr for atom ", i
-   !   enddo
-   !   call calcrab(n,at,xyz,rab)
-   !   S = tmpmat
-   !   efield = 0
-   !   open(newunit=myunit, file="polgrad.PTB", status='REPLACE',form='FORMATTED',action='WRITE')
-   !   write(myunit,*) "$polgrad from PTB"
-   !   do j=1,6
-   !      do i=1,n
-   !         write(myunit,*) fdgrad(1:3,i,mapping(j))
-   !      enddo
-   !   enddo
-   !   close(myunit)
-   !   write(*,'(a,/)') "written dalpha/dr in TM format to 'polgrad.PTB'"
-   !   deallocate(mapping)
-   !endif
+   if (raman) then
+      allocate(mapping(6))
+      mapping(1)=1
+      mapping(2)=3
+      mapping(3)=6
+      mapping(4)=2
+      mapping(5)=4
+      mapping(6)=5
+      write(*,'(/,a)') "--- dALPHA/dR ---"
+      x=0.005_wp
+      call modbas(n,at,4)
+      do i=1,n
+         do j=1,3
+            xyz(j,i)=xyz(j,i)+x
+            call calcrab(n,at,xyz,rab)
+            call sint(n,ndim,at,xyz,rab,S,xnorm)       ! exact S
+            call dipint(n,ndim,at,xyz,rab,xnorm,pnt,D3)! dipole integrals
+            call pgtb(.false.,-2,n,ndim,nel,nopen,ihomo,at,chrg,xyz,z,rab,pnt,xnorm,S,D3,&
+            &               efield,ML1,ML2,psh,q,P,F,eps,wbo,dip,alpr, pur)
+            xyz(j,i)=xyz(j,i)-2_wp*x
+            call calcrab(n,at,xyz,rab)
+            call sint(n,ndim,at,xyz,rab,S,xnorm)       ! exact S
+            call dipint(n,ndim,at,xyz,rab,xnorm,pnt,D3)! dipole integrals
+            call pgtb(.false.,-2,n,ndim,nel,nopen,ihomo,at,chrg,xyz,z,rab,pnt,xnorm,S,D3,&
+            &               efield,ML1,ML2,psh,q,P,F,eps,wbo,dip,alpl, pur)
+            fdgrad(j,i,1:6)=(alpr(1:6)-alpl(1:6))/(2_wp*x)
+            xyz(j,i)=xyz(j,i)+x
+         enddo
+         write(*,'(a,i0)') "Calculated dalpha/dr for atom ", i
+      enddo
+      call calcrab(n,at,xyz,rab)
+      S = tmpmat
+      efield = 0
+      open(newunit=myunit, file="polgrad.PTB", status='REPLACE',form='FORMATTED',action='WRITE')
+      write(myunit,*) "$polgrad from PTB"
+      do j=1,6
+         do i=1,n
+            write(myunit,*) fdgrad(1:3,i,mapping(j))
+         enddo
+      enddo
+      close(myunit)
+      write(*,'(a,/)') "written dalpha/dr in TM format to 'polgrad.PTB'"
+      deallocate(mapping)
+   endif
 
 
 ! SINGLE POINT PTB
    if(ldum) then ! run it in normal case or in energy mode if dump does not exist
       if(prop.gt.0) call dipint(n,ndim,at,xyz,rab,xnorm,pnt,D3)! dipole integrals
       call pgtb(.true.,prop,n,ndim,nel,nopen,ihomo,at,chrg,xyz,z,rab,pnt,xnorm,S,D3,&
-      &          efield,ML1,ML2,psh,q,P,F,eps,wbo,dip,alp)
+      &          efield,ML1,ML2,psh,q,P,F,eps,wbo,dip,alp, pur)
       inquire(file='ptb_dump',exist=ex)
       if (ex) call system('mv ptb_dump ptb_dump_0')  ! REQUIREMENT FOR THIS COPY PROCESS WAS NOT CLEAR
       if (prop.eq.4) goto 9999
