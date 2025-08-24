@@ -420,7 +420,10 @@ contains
       yiter(1)=scfpar(7)
       yiter(2)=1_wp
 
-      do iter=1, 2         ! two "iterations": in the first, q (=pa) = q(EEQ) and NO P (=+U)
+      !do iter=1, 2         ! two "iterations": in the first, q (=pa) = q(EEQ) and NO P (=+U)
+
+      print*,"WARNING: RUNNING ONLY THE FIRST ITERATION!!!"
+      do iter=1, 1         ! two "iterations": in the first, q (=pa) = q(EEQ) and NO P (=+U)
 
          call shscalP(iter,n,at,psh,scal)
          call modbasd(n,at,scal)         ! scale exponents shell/atom-wise with psh dep.
@@ -563,25 +566,6 @@ contains
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
    !  solve
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-         !filtering of matrices
-         if(filter>0)then
-            print*,"S before filtering:"
-            call analyse_matrix_sym(S,ndim)     
-            call filter_matrix_sym(S,ndim,filter)     
-            print*,"S after filtering:"
-            call analyse_matrix_sym(S,ndim)     
-
-            print*,"H before filtering:"
-            call analyse_matrix_sym(Hmat,ndim)     
-            call filter_matrix_sym(Hmat,ndim,filter)     
-            print*,"H after filtering:"
-            call analyse_matrix_sym(Hmat,ndim)     
-         else
-            print*,"S:"
-            call analyse_matrix_sym(S,ndim)     
-            print*,"H:"
-            call analyse_matrix_sym(Hmat,ndim)     
-         endif
          mode = iter
          if(iter.eq.2.and.prop.eq.4) mode = 3     ! stda write
          if(iter.eq.2.and.prop.eq.5) mode = 4     ! TM write
@@ -615,7 +599,8 @@ contains
 !                 call print_matrix(ndim, P, 'Purified density matrix') 
 !              call check_density(ndim, P, S, nel) ! check if computed density matrix valid 
            elseif (pur%mode.eq.submatrix)then
-             call sm_stupid_simple(ndim,nel,Hmat,S,P,n,xyz,aoat,pur%submatrix_columns,pur%submatrix_mode)
+             call adjust_thresholds(ndim, P)
+             call sm_stupid_simple(ndim,nel,Hmat,S,filter,P,n,xyz,aoat,pur%submatrix_columns,pur%submatrix_mode,eT)
            else
              print*,"mode",mode,"not implemented"
              stop
@@ -629,6 +614,7 @@ contains
              call analyse_matrix_sym(P,ndim) 
              print*,"maximal deviation in density matrix",maxval(abs(P-Pref)),maxloc(abs(P-Pref)),P(maxloc(abs(P-Pref))),Pref(maxloc(abs(P-Pref)))
              print*,"MSE of density matrix",sum((P-Pref)**2)/(real(n*(n-1)/2,kind=wp))
+             print*,"Inf-norm of density matrix",maxval(abs(P-Pref))
              etr_ref=band_structure(ndim,Pref,Hmat)
              etr=band_structure(ndim,P,Hmat)
              print*,"Tr(H Pref)=",etr_ref

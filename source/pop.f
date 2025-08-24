@@ -223,7 +223,7 @@ cccccccccccccccccccccccccccccccccccccccccccccc
             if(wb(j,i).gt.0.05)ibmax=j
             xsum=xsum+wb(j,i)
          enddo
-         write(*,'(i6,a4,1x,f6.3,9(4x,a2,i4,f6.3))')
+         write(*,'(i6,a4,1x,f12.8,9(4x,a2,i4,f12.8))')
      .   i,asym(at(i)),xsum,
      .   (asym(at(imem(j))),imem(j),wb(j,i),j=1,ibmax)
       enddo

@@ -31,20 +31,25 @@ contains
         call random_number(svar)
         end subroutine
 
-   subroutine sm_stupid_simple(ndim,nelref,Hvec,Svec,Pvec,n,xyz,aoat,submatrix_columns,submatrix_mode)
+   subroutine sm_stupid_simple(ndim,nelref,Hvec,Svec,filter,Pvec,n,xyz,aoat,submatrix_columns,submatrix_mode,eT)
      integer,intent(in)     :: nelref
      integer,intent(in)     :: ndim
      real(wp),intent(in)    :: Hvec(:)
      real(wp),intent(in)    :: Svec(:)
+     real(wp),intent(in)    :: filter
      real(wp),intent(inout) :: Pvec(:)
      integer,intent(in)     :: n
      real(wp),intent(in)    :: xyz(3,n)
      integer,intent(in)     :: aoat(ndim)
      integer,intent(in)     :: submatrix_columns
      integer,intent(in)     :: submatrix_mode
+     real(wp),intent(in)    :: eT
+     real(wp),parameter :: BOLTZ = 3.166808578545117E-06
 
      real(wp),allocatable :: H(:,:)
+     real(wp),allocatable :: Horig(:,:)
      real(wp),allocatable :: S(:,:)
+     real(wp),allocatable :: Sorig(:,:)
      real(wp),allocatable :: P(:,:)
      real(wp),allocatable :: Hsm(:,:)
      real(wp),allocatable :: Ssm(:,:)
@@ -73,17 +78,36 @@ contains
 
      print*,"Stupid simple implementation of the submatrix method:",submatrix_columns,submatrix_mode
      call timer_sm%new(20)
-     call timer_sm%click(1, 'alloc')
+     call timer_sm%click(1, 'alloc and filter')
 
      allocate(H(ndim,ndim))
      allocate(S(ndim,ndim))
+     allocate(Horig(ndim,ndim))
+     allocate(Sorig(ndim,ndim))
      allocate(P(ndim,ndim))
      allocate(itmp(ndim))
      allocate(tmp(ndim))
      allocate(st(ndim))
      
-     call blowsym(ndim,Hvec,H)
-     call blowsym(ndim,Svec,S)
+     call blowsym(ndim,Hvec,Horig)
+     call blowsym(ndim,Svec,Sorig)
+
+     !filter matrices
+     !$OMP PARALLEL DO private(i)
+     do j=1,ndim
+       do i=1,ndim
+        if (abs(Horig(i,j)).gt.filter)then
+          H(i,j)=Horig(i,j)
+        else
+          H(i,j)=0
+        endif
+        if (abs(Sorig(i,j)).gt.filter)then
+          S(i,j)=Sorig(i,j)
+        else
+          S(i,j)=0
+        endif
+      enddo
+    enddo
 
      call timer_sm%click(1)
      call timer_sm%click(2, 'submatrix combination')
@@ -170,7 +194,7 @@ contains
       ind=0
       do i=1,ndim
         do j=1,ncomb(ism)
-         if(H(i,comb(ism,j)).gt.0.or.S(i,comb(ism,j)).gt.0.or.i.eq.comb(ism,j))then
+         if(H(i,comb(ism,j)).ne.0.or.S(i,comb(ism,j)).ne.0.or.i.eq.comb(ism,j))then
            ind=ind+1
            exit
          endif
@@ -211,7 +235,7 @@ contains
           !$OMP PARALLEL DO Private(j)
           do i=1,ndim
             do j=1,ncomb(ism)
-             if(H(i,comb(ism,j)).gt.0.or.S(i,comb(ism,j)).gt.0.or.i.eq.comb(ism,j))then
+             if(H(i,comb(ism,j)).ne.0.or.S(i,comb(ism,j)).ne.0.or.i.eq.comb(ism,j))then
                st(i)=1
                exit
              endif
@@ -237,11 +261,11 @@ contains
           allocate(Hsm(smdim,smdim))
           allocate(Ssm(smdim,smdim))
           allocate(Psm(smdim,smdim))
-          !$OMP PARALLEL DO private(j)
-          do i=1,smdim
-            do j=1,smdim
-              Hsm(i,j)=H(eigdecomp(ism)%map(i),eigdecomp(ism)%map(j))    
-              Ssm(i,j)=S(eigdecomp(ism)%map(i),eigdecomp(ism)%map(j))    
+          !$OMP PARALLEL DO private(i)
+          do j=1,smdim
+            do i=1,smdim
+              Hsm(i,j)=Horig(eigdecomp(ism)%map(i),eigdecomp(ism)%map(j))    
+              Ssm(i,j)=Sorig(eigdecomp(ism)%map(i),eigdecomp(ism)%map(j))    
             enddo
           enddo
           call timer_sm%click(5)
@@ -319,14 +343,16 @@ contains
           deallocate(Psm)
         endif 
         call timer_sm%click(9, 'submatrix occ')
+        !$OMP PARALLEL DO 
         do i=1,eigdecomp(ism)%ndim
-          if(eigdecomp(ism)%e(i).lt.mu)then
-            eigdecomp(ism)%occ(i)=2
-          elseif(eigdecomp(ism)%e(i).eq.mu)then
-            eigdecomp(ism)%occ(i)=1
-          else
-            eigdecomp(ism)%occ(i)=0
-          endif
+          eigdecomp(ism)%occ(i)=2.0D0/(1.0D0+exp((eigdecomp(ism)%e(i)-mu)/(BOLTZ*eT)))
+!          if(eigdecomp(ism)%e(i).lt.mu)then
+!            eigdecomp(ism)%occ(i)=2
+!          elseif(eigdecomp(ism)%e(i).eq.mu)then
+!            eigdecomp(ism)%occ(i)=1
+!          else
+!            eigdecomp(ism)%occ(i)=0
+!          endif
         enddo
         call timer_sm%click(9)
         
@@ -337,6 +363,7 @@ contains
         !  k=imap(comb(ism,j))
         !  nel=nel+Hsm(k,k)
         !enddo
+
         nel=nel+sum(eigdecomp(ism)%fe(:)*eigdecomp(ism)%occ(:))
         call timer_sm%click(10)
         
@@ -344,13 +371,15 @@ contains
           call timer_sm%click(11, 'submatrix final iter')
           smdim=eigdecomp(ism)%ndim
           allocate(Psm(smdim,smdim))
-          do i=1,smdim
-            do j=1,smdim
+          !$OMP PARALLEL DO private(i)
+          do j=1,smdim
+            do i=1,smdim
               Psm(i,j)=P(eigdecomp(ism)%map(i),eigdecomp(ism)%map(j))    
             enddo
           enddo
           !put results in P
           call dmat(smdim,eigdecomp(ism)%occ,eigdecomp(ism)%U,Psm)
+          !$OMP PARALLEL DO private(k,j)
           do j=1,ncomb(ism)
             k=eigdecomp(ism)%imap(comb(ism,j))
             do i=1,smdim
@@ -367,7 +396,7 @@ contains
        endif
        
        print*,"muiter",muiter,"mu",mu,nel,"of",nelref
-       if(abs(mua-mub).lt.1e-3.or.abs(nel-nelref).lt.1e-5)then
+       if(abs(mua-mub).lt.1e-8.or.abs(nel-nelref).lt.1e-5)then
          print*,"iteration of chemical potential converged"
          finaliter=.true.
          print*,"final iteration to get density matrix"
@@ -387,6 +416,8 @@ contains
      call packsym(ndim,P,Pvec)
      deallocate(H)
      deallocate(S)
+     deallocate(Horig)
+     deallocate(Sorig)
      deallocate(P)
      deallocate(ncomb)
      deallocate(comb)
@@ -501,7 +532,7 @@ contains
        ind=0
        do i=1,ndim
          do j=1,ncomb(ism)
-           if(H(i,comb(ism,j)).gt.0.or.S(i,comb(ism,j)).gt.0.or.i.eq.comb(ism,j))then
+           if(H(i,comb(ism,j)).ne.0.or.S(i,comb(ism,j)).ne.0.or.i.eq.comb(ism,j))then
               !map(ind+1)=i 
               ind=ind+1
               exit

@@ -1,4 +1,0 @@
-mode = submatrix
-check
-submatrix_mode = submatrix_sygv
-submatrix_columns = single_columns 

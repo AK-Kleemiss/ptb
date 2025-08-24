@@ -12,5 +12,5 @@ export OMP_NUM_THREADS=64
 lscpu
 export OMP_STACKSIZE=16G
 
-numactl -i 0-3 --cpunodebind=0-3 ../../../../build/ptb_dev ../../../../systems/s30l_24.xyz -par ../../../../.atompara -chrg   -bas ../../../../.basis_vDZP -filter 0.0001 -check -purify > out 2> err
+numactl -i 0-3 --cpunodebind=0-3 ../../../../build/ptb_dev ../../../../systems/s30l_24.xyz -par ../../../../.atompara -chrg   -bas ../../../../.basis_vDZP -filter 0.0001 $1 $2 $3 $4 > out 2> err
 #numactl -m 0 --cpunodebind=0 ../../../../build/ptb_dev ../../../../systems/s30l_24.xyz -par ../../../../.atompara -chrg   -bas ../../../../.basis_vDZP -filter 0.0001 -check -purify > out 2> err
