@@ -31,7 +31,7 @@ contains
 
    subroutine pgtb(pr,prop,n,ndim,nel,nopen,homo,at,chrg,filter,xyz,z,rab, &
    &               pnt,norm,S,D,efield,S1,S2,psh,pa,&
-   &               P,H,eps,wbo,dip,alp, pur)
+   &               P,H,eps,wbo,dip,alp,oneiter,pur)
       use iso_fortran_env, only : wp => real64
       use parcom
       use bascom
@@ -64,6 +64,7 @@ contains
       real(wp),intent(inout) :: S(ndim*(ndim+1)/2) ! exact overlap maxtrix in SAO
       real(wp),intent(in)    :: D(ndim*(ndim+1)/2,3)!dipole integrals
       real(wp),intent(in)    :: efield(3)          ! electric field
+      logical, intent(in)    :: oneiter            ! run only one iteration
       type(tPurificationSet), allocatable, optional :: pur
    !! ------------------------------------------------------------------------
    !  Output
@@ -213,7 +214,8 @@ contains
       scfpar(7) =  1.0d0 !glob_par(18)  ! gamscal in onescf
       scfpar(8) =  glob_par(12)  ! gpol in onescf
       call twoscf(pr,prop,n,ndim,nel,nopen,homo,at,filter,xyz,z,rab,cns,S,SS,Vecp,Hdiag,focc,&
-         norm,pnt,eT,scfpar,S1,S2,psh,pa,P,H,ves0,gab,eps,U, pur)
+         norm,pnt,eT,scfpar,S1,S2,psh,pa,P,H,ves0,gab,eps,U,oneiter,pur)
+
 
    !! ------------------------------------------------------------------------
    !  done
@@ -343,7 +345,7 @@ contains
    !! ------------------------------------------------------------------------
 
    subroutine twoscf(pr,prop,n,ndim,nel,nopen,homo,at,filter,xyz,z,rab,cn,S,SS,Vecp,Hdiag,focc,&
-      norm,pnt,eT,scfpar,S1,S2,psh,pa,P,Hmat,ves,gab,eps,U,pur)
+      norm,pnt,eT,scfpar,S1,S2,psh,pa,P,Hmat,ves,gab,eps,U,oneiter,pur)
       use iso_fortran_env, only : wp => real64, stdout => output_unit
       use bascom
       use parcom
@@ -380,6 +382,7 @@ contains
       real(wp),intent(in)    :: scfpar(8)             ! parameters
       real*4  ,intent(in)    :: S1(ndim,ndim)         ! ML trafo
       real*4  ,intent(in)    :: S2(ndim,ndim)         ! "   "
+      logical, intent(in)    :: oneiter               ! run only one iteration
       type(tPurificationSet),allocatable, optional ::  pur
 
    !! ------------------------------------------------------------------------
@@ -396,7 +399,7 @@ contains
 
    !  local
       logical  :: fail, debug
-      integer  :: i,j,k,l,ish,ati,atj,ia,ib,jsh,ii,jj,lin,ij,li,lj,iter,iish,jjsh,mode
+      integer  :: i,j,k,l,ish,ati,atj,ia,ib,jsh,ii,jj,lin,ij,li,lj,iter,iish,jjsh,mode,count
       real(wp),parameter :: au2ev = 27.2113957_wp
       real(wp) :: r,tmp,pol,hi,hj,hij,xk,t8,t9,qa,qb,keav,eh1,tmp2
       real(wp) :: xiter(2),yiter(2),ziter(2),ssh,gap1,gap2
@@ -419,11 +422,13 @@ contains
       xiter(2)=1_wp
       yiter(1)=scfpar(7)
       yiter(2)=1_wp
+      count = merge(1, 2, oneiter)
 
-      !do iter=1, 2         ! two "iterations": in the first, q (=pa) = q(EEQ) and NO P (=+U)
+      do iter=1, count         ! two "iterations": in the first, q (=pa) = q(EEQ) and NO P (=+U)
 
-      print*,"WARNING: RUNNING ONLY THE FIRST ITERATION!!!"
-      do iter=1, 1         ! two "iterations": in the first, q (=pa) = q(EEQ) and NO P (=+U)
+         if (oneiter) then
+            print*,"WARNING: RUNNING ONLY THE FIRST ITERATION!!!"
+         endif
 
          call shscalP(iter,n,at,psh,scal)
          call modbasd(n,at,scal)         ! scale exponents shell/atom-wise with psh dep.

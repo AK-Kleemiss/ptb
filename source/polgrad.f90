@@ -27,13 +27,13 @@
             call sint(n,ndim,at,xyz,rab,S,xnorm)       ! exact S
             call dipint(n,ndim,at,xyz,rab,xnorm,pnt,D3)! dipole integrals
             call pgtb(.false.,-2,n,ndim,nel,nopen,ihomo,at,chrg,filter,xyz,z,rab,pnt,xnorm,S,D3,&
-     &               efield,ML1,ML2,psh,q,P,F,eps,wbo,dip,alpr)
+     &               efield,ML1,ML2,psh,q,P,F,eps,wbo,dip,alpr,oneiter)
             xyz(j,i)=xyz(j,i)-2_wp*x
             call calcrab(n,at,xyz,rab)
             call sint(n,ndim,at,xyz,rab,S,xnorm)       ! exact S
             call dipint(n,ndim,at,xyz,rab,xnorm,pnt,D3)! dipole integrals
             call pgtb(.false.,-2,n,ndim,nel,nopen,ihomo,at,chrg,filter,xyz,z,rab,pnt,xnorm,S,D3,&
-     &               efield,ML1,ML2,psh,q,P,F,eps,wbo,dip,alpl)
+     &               efield,ML1,ML2,psh,q,P,F,eps,wbo,dip,alpl,oneiter)
             fdgrad(j,i,1:6)=(alpr(1:6)-alpl(1:6))/(2_wp*x)
             xyz(j,i)=xyz(j,i)+x   
          enddo
