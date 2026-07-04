@@ -22,23 +22,24 @@ ccccccccccccccccccccccccccccccccccccccccccc
 
       integer, intent ( in ) :: nmo,nc,at(nc),homo
       real*8,  intent ( in ) :: xyz(3,nc)
-      real*8,  intent ( in ) :: norm_(nmo)    
+      real*8,  intent ( in ) :: norm_(nmo)
       real*8,  intent ( in ) :: mowrcut
       real*8,  intent ( in ) :: eval(nmo)
       real*8,  intent ( in ) :: occ(nmo)
       real*8,  intent ( inout ) :: tmp(nmo,nmo)
 
       ! temporary variables
-      integer i,j,k,nprims,iat,iwfn,iao
+      integer nbf
+      integer i,j,k,nprims,nmomax,iat,iwfn,iao
       real*8 dum
       character*2 atyp
-      integer lao(nmo),nprim(nmo)
+      integer lao(ncao),nprim(ncao),aoatcart(ncao)
       integer lladr(0:3),ll(0:3)
-      data lladr  /1,3,5,7/
-      data ll     /0,1,4,9/
+      data lladr  /1,3,6,10/
+      data ll     /0,1,4,10/
       real*8,allocatable :: cmo(:,:)
 
-      allocate(cmo(nmo,nmo))
+      allocate(cmo(ncao,nmo))
 
       !Check for the sizes of matrizes
       if (size(tmp, 2) /= size(norm_, 1)) then
@@ -47,31 +48,29 @@ ccccccccccccccccccccccccccccccccccccccccccc
       if (size(tmp, 1) /= nmo) then
          error stop "Error: Dimensions do not match for multiplication."
       endif
-  
-      do i=1,nmo 
-         cmo(i,:)=tmp(i,:)*norm_(i)
-      enddo
-      !call sao2cao(nmo,tmp,cmo,nc,at)
-      
-      !do i=1,nmo 
-      !   tmp(i,:)=tmp(i,:)/norm(i)
-      !enddo
 
       do i=1,nmo
-         nprim(i) = bas_npr(shell2ao(i), at(aoat(i)))
+         tmp(i,:)=tmp(i,:)*norm_(i)
       enddo
+      call sao2cao(nmo,tmp,cmo,nc,at)
+
+      nbf=ncao
+      nprim=prim_npr
       nprims=npr
 
       iwfn=29
       open(unit=iwfn,file='wfn.xtb',form='unformatted',
      .     status='replace')
 
+! only print out virtuals below cutoff
+      nmomax=nmo
+
                     !***********
                     ! RHF case *
                     !***********
 ! write dimensions
       write(iwfn)1
-      write(iwfn)nc,nmo,nmo,nprims
+      write(iwfn)nc,nbf,nmomax,nprims
 ! now write coordinates & atom symbol
       do i = 1,nc
          call aasym(at(i),atyp)
@@ -79,14 +78,12 @@ ccccccccccccccccccccccccccccccccccccccccccc
       enddo
 
       do i = 1,nc
-      !X,y,z coordinates
          do j=1,3
             dum=xyz(j,i)
             write(iwfn) dum
-         enddo 
-         !Atom charge
+         enddo
          write(iwfn) at(i)
-      enddo       
+      enddo
 ! Now print basis set data
 
       k=0
@@ -96,28 +93,27 @@ ccccccccccccccccccccccccccccccccccccccccccc
             do iao=1,lladr(bas_lsh(j,iat))
                k=k+1
                lao(k)=ll(bas_lsh(j,iat))+iao
-               aoat(k)=i
+               aoatcart(k)=i
             enddo
          enddo
       enddo
 
-      do i=1,nmo
-      !Writes type (as in s, py, pz, px, dxy, ...) of each AO
+! print ipty
+      do i=1,nbf
          k = lao(i)
          do j=1,nprim(i)
             write(iwfn) k
          enddo
       enddo
-
-      do i=1,nmo
-      !Write center assignment of each AO
-         k=aoat(i)
+! iaoat
+      do i=1,nbf
+         k=aoatcart(i)
          do j=1,nprim(i)
             write(iwfn) k
          enddo
       enddo
 ! ipao
-      do i=1,nmo
+      do i=1,nbf
          k=i
          do j=1,nprim(i)
             write(iwfn) k
@@ -126,12 +122,12 @@ ccccccccccccccccccccccccccccccccccccccccccc
 
 ! exponents and coefficients
       write(iwfn) prim_exp(1:nprims)
-      write(iwfn) prim_cnt(1:nprims) 
+      write(iwfn) prim_cnt(1:nprims)
 
 ! now the mo data
-      write(iwfn) occ(1:nmo)
-      write(iwfn) eval(1:nmo)
-      write(iwfn) cmo(1:nmo,1:nmo)
+      write(iwfn) occ(1:nmomax)
+      write(iwfn) eval(1:nmomax)
+      write(iwfn) cmo(1:nbf,1:nmomax)
       close(iwfn)
 
       return

@@ -9,7 +9,7 @@ program gTB
    use pgtb_
    use iso_fortran_env, only : wp => real64
    use purification_settings, only: tPurificationSet
-   use default_files, only: materialize_default_atompara, materialize_default_basis
+   use default_files, only: default_atompara
    implicit none
 
    real(wp),allocatable :: xyz(:,:),rab(:),z(:), wbo(:,:), cn(:)
@@ -26,6 +26,7 @@ program gTB
    integer na,nb,nel,ihomo
    integer prop
    integer i,j,ns,nf,nl
+   integer :: par_idx
    real(wp) chrg ! could be fractional for model systems
 
    real(wp) t1,w1,t00,w00
@@ -37,8 +38,10 @@ program gTB
    logical :: ex
    logical :: stda
    logical :: logicals(10)
+   logical :: used_default_par
 
    character(len=256)      :: fname,pname,bname,atmp,arg1
+   character(len=150)      :: pline
 
    !> Handle purification
    type(tPurificationSet), allocatable :: pur
@@ -107,34 +110,35 @@ program gTB
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
    inquire(file=pname,exist=ex)
-   if (.not.ex) then
+   used_default_par = .not.ex
+   if (used_default_par) then
       write(*,'(a)') "Parameter file '"//trim(pname)//"' not found, using built-in defaults."
-      call materialize_default_atompara(pname)
+   else
+      write(*,*) pname
+      open(unit=1,file=pname)
    end if
-
-   write(*,*) pname
-   open(unit=1,file=pname)
-   read(1,*) glob_par (1:10)
-   read(1,*) glob_par(11:20)
+   par_idx = 0
+   pline = parline(); read(pline,*) glob_par (1:10)
+   pline = parline(); read(pline,*) glob_par(11:20)
    do i=1,72 ! change here for new elements
-      read(1,*) j
-      read(1,*) ener_par1 (1:10,j)    ! 1 -10
-      read(1,*) ener_par2 (1:10,j)    ! 11-20
-      read(1,*) expscal  (1,1:10,j)   ! 21-30
-      read(1,*) ener_par6 (1:10,j)    ! 31-40
-      read(1,*) ener_par4 (1:10,j)    ! 41-50
-      read(1,*) ener_par5 (1:10,j)    ! 51-60
-      read(1,*) expscal  (2,1:10,j)   ! 61-70  PTB
-      read(1,*) shell_xi  (1:10,j)    ! 71-80    "
-      read(1,*) shell_cnf1(1:10,j)    ! 81-90    "
-      read(1,*) shell_cnf2(1:10,j)    ! 91-100   "
-      read(1,*) shell_cnf3(1:10,j)    ! 101-110  "
-      read(1,*) expscal  (3,1:10,j)   ! 111-120  "
-      read(1,*) shell_cnf4(1:10,j)    ! 121-130  "
-      read(1,*) shell_resp(1:10,j,1)  ! 131-140  "
-      read(1,*) shell_resp(1:10,j,2)  ! 141-150  "
+      pline = parline(); read(pline,*) j
+      pline = parline(); read(pline,*) ener_par1 (1:10,j)    ! 1 -10
+      pline = parline(); read(pline,*) ener_par2 (1:10,j)    ! 11-20
+      pline = parline(); read(pline,*) expscal  (1,1:10,j)   ! 21-30
+      pline = parline(); read(pline,*) ener_par6 (1:10,j)    ! 31-40
+      pline = parline(); read(pline,*) ener_par4 (1:10,j)    ! 41-50
+      pline = parline(); read(pline,*) ener_par5 (1:10,j)    ! 51-60
+      pline = parline(); read(pline,*) expscal  (2,1:10,j)   ! 61-70  PTB
+      pline = parline(); read(pline,*) shell_xi  (1:10,j)    ! 71-80    "
+      pline = parline(); read(pline,*) shell_cnf1(1:10,j)    ! 81-90    "
+      pline = parline(); read(pline,*) shell_cnf2(1:10,j)    ! 91-100   "
+      pline = parline(); read(pline,*) shell_cnf3(1:10,j)    ! 101-110  "
+      pline = parline(); read(pline,*) expscal  (3,1:10,j)   ! 111-120  "
+      pline = parline(); read(pline,*) shell_cnf4(1:10,j)    ! 121-130  "
+      pline = parline(); read(pline,*) shell_resp(1:10,j,1)  ! 131-140  "
+      pline = parline(); read(pline,*) shell_resp(1:10,j,2)  ! 141-150  "
    enddo
-   close(1)
+   if (.not.used_default_par) close(1)
 
 ! mol. charge
    inquire(file='.CHRG',exist=ex)
@@ -187,11 +191,6 @@ program gTB
    nel=int(sum(z))-int(chrg)
 
    ndim=0
-   inquire(file=bname,exist=ex)
-   if (.not.ex) then
-      write(*,'(a)') "Basis file '"//trim(bname)//"' not found, using built-in defaults."
-      call materialize_default_basis(bname)
-   end if
    call rdbas(bname)                      ! file: ~/.basis_vDZP
    write(*,*) 'basis read done.'
    call setupbas0(n,at,ndim)
@@ -233,6 +232,18 @@ program gTB
 
    call timing(t1,w1)
    call prtime(6,t1-t00,w1-w00,'all')
+
+contains
+
+   function parline() result(line)
+      character(len=150) :: line
+      if (used_default_par) then
+         par_idx = par_idx + 1
+         line = default_atompara(par_idx)
+      else
+         read(1,'(a)') line
+      end if
+   end function parline
 
 end
 

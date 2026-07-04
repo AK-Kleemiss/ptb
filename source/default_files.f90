@@ -1,7 +1,7 @@
 module default_files
    implicit none
    private
-   public :: materialize_default_atompara, materialize_default_basis
+   public :: default_atompara, default_basis
 
    character(len=150), parameter :: default_atompara(1154) = [ character(len=150) :: &
       "   0.5000000000   1.0000000000   0.3562939844   3.5402629000   2.0000000000   3.0000000000   0.0000000000   0.0000000000   0.0000000000   0.0000000000", &
@@ -3554,29 +3554,5 @@ module default_files
       "  0.333065558019575       0.245718887909484", &
       "  0.214108626479384        1.21989720124417", &
       "*"]
-
-contains
-
-   subroutine materialize_default_atompara(path)
-      character(len=*), intent(out) :: path
-      integer :: iunit, i
-      path = 'ptb_default.atompara'
-      open(newunit=iunit, file=path, status='replace', action='write')
-      do i = 1, size(default_atompara)
-         write(iunit,'(a)') trim(default_atompara(i))
-      end do
-      close(iunit)
-   end subroutine materialize_default_atompara
-
-   subroutine materialize_default_basis(path)
-      character(len=*), intent(out) :: path
-      integer :: iunit, i
-      path = 'ptb_default.basis_vDZP'
-      open(newunit=iunit, file=path, status='replace', action='write')
-      do i = 1, size(default_basis)
-         write(iunit,'(a)') trim(default_basis(i))
-      end do
-      close(iunit)
-   end subroutine materialize_default_basis
 
 end module default_files

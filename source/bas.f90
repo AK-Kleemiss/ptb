@@ -230,54 +230,82 @@ end
 
 subroutine rdbas(fname)
       use bascom
+      use default_files, only: default_basis
       implicit none
 
       character(len=*), intent(in) :: fname
       character*80 atmp
       integer nn,i,iat,np,l
       real*8 xx(10)
-      logical :: ex
+      logical :: ex, use_default, at_end
+      integer :: line_idx
 
       bas_nsh = 0
       bas_lsh = 0
       bas_npr = 0
       bas_ec  = 0
 
-      ! open(unit=44,file='~/.basis_vDZP')
       inquire(file=fname, exist=ex)
-      if (.not.ex) then
-         print '(a)', "Error: Cannot find basis set file '"//trim(fname)//"'.", &
-            & "Provide basis file or specify location with -bas option."
-         error stop
+      use_default = .not. ex
+      if (use_default) then
+         print '(a)', "Basis file '"//trim(fname)//"' not found, using built-in defaults."
+      else
+         open(unit=44,file=fname)
       end if
-      open(unit=44,file=fname)
+      line_idx = 0
 
- 10   read(44,'(a)',end=20) atmp
-      if(index(atmp,'*').ne.0) then        
-         read(44,*) iat             
- 12      read(44,'(a)',end=20) atmp
-         if(index(atmp,'*').ne.0) goto 10     
+ 10   call get_line(atmp,at_end)
+      if (at_end) goto 20
+      if(index(atmp,'*').ne.0) then
+         call get_line(atmp,at_end)
+         if (at_end) goto 20
+         read(atmp,*) iat
+ 12      call get_line(atmp,at_end)
+         if (at_end) goto 20
+         if(index(atmp,'*').ne.0) goto 10
          call readl(atmp,xx,nn)
          if(nn.eq.1)then
             np = idint(xx(1))
             if(np.gt.5) stop 'contraction > 5 (recompile -> bascom.f90)'
-            if(index(atmp,'s').ne.0) l=0         
-            if(index(atmp,'p').ne.0) l=1         
-            if(index(atmp,'d').ne.0) l=2         
-            if(index(atmp,'f').ne.0) l=3                
+            if(index(atmp,'s').ne.0) l=0
+            if(index(atmp,'p').ne.0) l=1
+            if(index(atmp,'d').ne.0) l=2
+            if(index(atmp,'f').ne.0) l=3
             if(index(atmp,'g').ne.0) stop 'lmax = f'
             bas_nsh(iat)=bas_nsh(iat)+1
-            bas_lsh(bas_nsh(iat),iat)=l           
-            bas_npr(bas_nsh(iat),iat)=np          
+            bas_lsh(bas_nsh(iat),iat)=l
+            bas_npr(bas_nsh(iat),iat)=np
             do i=1,np
-               read(44,*) bas_ec(1,i,bas_nsh(iat),iat),bas_ec(2,i,bas_nsh(iat),iat)
+               call get_line(atmp,at_end)
+               read(atmp,*) bas_ec(1,i,bas_nsh(iat),iat),bas_ec(2,i,bas_nsh(iat),iat)
             enddo
          endif
          goto 12
       endif
       goto 10
- 20   close(44)
-      
+ 20   if (.not.use_default) close(44)
+      return
+
+contains
+
+      subroutine get_line(line,at_end)
+      character(len=*), intent(out) :: line
+      logical, intent(out) :: at_end
+      integer :: ios
+      at_end = .false.
+      if (use_default) then
+         line_idx = line_idx + 1
+         if (line_idx.gt.size(default_basis)) then
+            at_end = .true.
+         else
+            line = default_basis(line_idx)
+         end if
+      else
+         read(44,'(a)',iostat=ios) line
+         at_end = (ios.ne.0)
+      end if
+      end subroutine get_line
+
 end
 
       DOUBLE PRECISION FUNCTION DEX2(M)
