@@ -76,7 +76,7 @@ ifeq ($(NAME),LINUX)
 	    #$(MKLROOT)/libmkl_core.a \
 	    #$(MKLROOT)/libmkl_sequential.a \
 	    #-Wl,--end-group -lpthread -lm
-	    FFLAGS = -g -fbacktrace -fcheck=all
+	    FFLAGS = -g -fbacktrace -fcheck=all -ffree-line-length-none
 		#FFLAGS = -O3 -fopenmp
 	    CCFLAGS = -O -DLINUX
 	endif

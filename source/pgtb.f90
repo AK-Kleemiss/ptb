@@ -307,11 +307,11 @@ contains
       real(wp), allocatable :: SSS(:)
       real(wp), allocatable :: vs(:),vd(:,:),vq(:,:)
       real(wp), allocatable :: gq(:),xab(:),scal(:,:)
-      real(wp), dimension(ndim*(ndim+1)/2) :: P2
+      real(wp), allocatable :: P2(:)
 
    !  special overlap matrix for XC term
       call modbas(n,at,2)
-      allocate(SSS(ndim*(ndim+1)/2),gq(n),xab(n*(n+1)/2),scal(10,nsh))
+      allocate(SSS(ndim*(ndim+1)/2),gq(n),xab(n*(n+1)/2),scal(10,nsh),P2(ndim*(ndim+1)/2))
       call sint(n,ndim,at,xyz,rab,SSS,eps)
 
       ziter(1)=scfpar(4)
