@@ -95,6 +95,8 @@ subroutine setupbas(n,at,ndim)
                   prim_exp(npr) = bas_ec(1,pr,ish,iat)
                   prim_cnt(npr) = bas_ec(2,pr,ish,iat)*xnorm
                   if(lshell.eq.2.and.iao.gt.3) prim_cnt(npr)=prim_cnt(npr)*sqrt(3.0d0)
+                  if(lshell.eq.3.and.iao.ge.4.and.iao.le.9) prim_cnt(npr)=prim_cnt(npr)*sqrt(5.0d0)
+                  if(lshell.eq.3.and.iao.eq.10) prim_cnt(npr)=prim_cnt(npr)*sqrt(15.0d0)
 !                 alp=alp+prim_exp(npr)*abs(prim_cnt(npr))
 !                 tmp=tmp+              abs(prim_cnt(npr))
                enddo
@@ -168,6 +170,8 @@ subroutine modbas(n,at,itv)
                   prim_exp(npr) = bas_ec(1,pr,ish,iat)*expscal(itv,ish,iat)
                   prim_cnt(npr) = bas_ec(2,pr,ish,iat)*xnorm
                   if(lshell.eq.2.and.iao.gt.3) prim_cnt(npr)=prim_cnt(npr)*sqrt(3.0d0)
+                  if(lshell.eq.3.and.iao.ge.4.and.iao.le.9) prim_cnt(npr)=prim_cnt(npr)*sqrt(5.0d0)
+                  if(lshell.eq.3.and.iao.eq.10) prim_cnt(npr)=prim_cnt(npr)*sqrt(15.0d0)
                enddo
             enddo
          enddo
@@ -213,6 +217,8 @@ subroutine modbasd(n,at,scal)
                   prim_exp(npr) = bas_ec(1,pr,ish,iat)*scal(ish,i)
                   prim_cnt(npr) = bas_ec(2,pr,ish,iat)*xnorm
                   if(lshell.eq.2.and.iao.gt.3) prim_cnt(npr)=prim_cnt(npr)*sqrt(3.0d0)
+                  if(lshell.eq.3.and.iao.ge.4.and.iao.le.9) prim_cnt(npr)=prim_cnt(npr)*sqrt(5.0d0)
+                  if(lshell.eq.3.and.iao.eq.10) prim_cnt(npr)=prim_cnt(npr)*sqrt(15.0d0)
                enddo
             enddo
          enddo

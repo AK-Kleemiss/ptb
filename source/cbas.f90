@@ -63,14 +63,14 @@ subroutine calcvecp(n,nao,at,xyz,rab,norm,Scv,v)
 subroutine csint(nat,nao,at,xyz,rab,norm,s)
       use bascom
       use cbascom
-      implicit none          
+      implicit none
       integer, intent(in)  :: nao,nat,at(nat)
       real*8, intent(in)   :: xyz(3,nat)
       real*8, intent(in)   :: rab(nat*(nat+1)/2)
-      real*8, intent(in)   :: norm(nao)        
-      real*8, intent(out)  :: s(cnsao,nao)        
+      real*8, intent(in)   :: norm(nao)
+      real*8, intent(out)  :: s(cnsao,nao)
 
-      real*8 ss(6,6)
+      real*8 ss(10,10)
       real*8 tmp1,tmp2,tmp3,tmp4,intcut,s00,apb
       real*8 r1,r2,t1,t2,t3,t4,f,ci,cc,cj,alpi,rab2,ab,est
       real*8 rc(3),ra(3),rb(3),p(3),g(3),alpj,va(1),alpc,ccc

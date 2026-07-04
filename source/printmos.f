@@ -29,17 +29,16 @@ ccccccccccccccccccccccccccccccccccccccccccc
       real*8,  intent ( inout ) :: tmp(nmo,nmo)
 
       ! temporary variables
-      integer nbf
-      integer i,j,k,nprims,nmomax,iat,iwfn,iao
+      integer i,j,k,nprims,iat,iwfn,iao
       real*8 dum
       character*2 atyp
-      integer lao(ncao),nprim(ncao),aoatcart(ncao)
+      integer lao(nmo),nprim(nmo)
       integer lladr(0:3),ll(0:3)
-      data lladr  /1,3,6,10/
-      data ll     /0,1,4,10/
+      data lladr  /1,3,5,7/
+      data ll     /0,1,4,9/
       real*8,allocatable :: cmo(:,:)
 
-      allocate(cmo(ncao,nmo))
+      allocate(cmo(nmo,nmo))
 
       !Check for the sizes of matrizes
       if (size(tmp, 2) /= size(norm_, 1)) then
@@ -50,31 +49,29 @@ ccccccccccccccccccccccccccccccccccccccccccc
       endif
   
       do i=1,nmo 
-         tmp(i,:)=tmp(i,:)*norm_(i)
+         cmo(i,:)=tmp(i,:)*norm_(i)
       enddo
-      call sao2cao(nmo,tmp,cmo,nc,at)
+      !call sao2cao(nmo,tmp,cmo,nc,at)
       
       !do i=1,nmo 
       !   tmp(i,:)=tmp(i,:)/norm(i)
       !enddo
 
-      nbf=ncao
-      nprim=prim_npr
+      do i=1,nmo
+         nprim(i) = bas_npr(shell2ao(i), at(aoat(i)))
+      enddo
       nprims=npr
 
       iwfn=29
       open(unit=iwfn,file='wfn.xtb',form='unformatted',
      .     status='replace')
 
-! only print out virtuals below cutoff
-      nmomax=nmo
-
                     !***********
                     ! RHF case *
                     !***********
 ! write dimensions
       write(iwfn)1
-      write(iwfn)nc,nbf,nmomax,nprims
+      write(iwfn)nc,nmo,nmo,nprims
 ! now write coordinates & atom symbol
       do i = 1,nc
          call aasym(at(i),atyp)
@@ -82,10 +79,12 @@ ccccccccccccccccccccccccccccccccccccccccccc
       enddo
 
       do i = 1,nc
+      !X,y,z coordinates
          do j=1,3
             dum=xyz(j,i)
             write(iwfn) dum
          enddo 
+         !Atom charge
          write(iwfn) at(i)
       enddo       
 ! Now print basis set data
@@ -97,27 +96,28 @@ ccccccccccccccccccccccccccccccccccccccccccc
             do iao=1,lladr(bas_lsh(j,iat))
                k=k+1
                lao(k)=ll(bas_lsh(j,iat))+iao
-               aoatcart(k)=i
+               aoat(k)=i
             enddo
          enddo
       enddo
 
-! print ipty
-      do i=1,nbf
+      do i=1,nmo
+      !Writes type (as in s, py, pz, px, dxy, ...) of each AO
          k = lao(i)
          do j=1,nprim(i)
             write(iwfn) k
          enddo
       enddo
-! iaoat
-      do i=1,nbf
-         k=aoatcart(i)
+
+      do i=1,nmo
+      !Write center assignment of each AO
+         k=aoat(i)
          do j=1,nprim(i)
             write(iwfn) k
          enddo
       enddo
 ! ipao
-      do i=1,nbf
+      do i=1,nmo
          k=i
          do j=1,nprim(i)
             write(iwfn) k
@@ -129,9 +129,9 @@ ccccccccccccccccccccccccccccccccccccccccccc
       write(iwfn) prim_cnt(1:nprims) 
 
 ! now the mo data
-      write(iwfn) occ(1:nmomax)
-      write(iwfn) eval(1:nmomax)
-      write(iwfn) cmo(1:nbf,1:nmomax)
+      write(iwfn) occ(1:nmo)
+      write(iwfn) eval(1:nmo)
+      write(iwfn) cmo(1:nmo,1:nmo)
       close(iwfn)
 
       return

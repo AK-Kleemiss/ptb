@@ -4,17 +4,17 @@ WITH_DFTD4 = TRUE
 SOURCES = accuracy.f90 timer.f90 la.f90 blas_level1.f90 blas_level2.f90 blas_level3.f90 lapack_eig.f90
 $(foreach src, $(SOURCES), $(eval $(src) := $(patsubst %.f90, %.o, $(src))))
 
-MODULES= bascom.o parcom.o com.o thresholds.o cbascom.o mocom.o dftd4.o aescom.o \
+MODULES= bascom.o parcom.o com.o thresholds.o cbascom.o mocom.o dftd4.o aescom.o default_files.o \
 			$(foreach src, $(SOURCES), $($(src)))
 
 CFILES= symmetry_i.o
 
 OBJS1 = matrix_ops.o metrics.o purification_settings.o norms.o  purification.o \
 		rdcoord.o readl.o asym.o elem.o readl2.o readline.o prmat.o  timing.o echo.o solve.o rdstvint.o \
-        ints.o intpack.o pop.o rdmat.o fermi.o reorder.o bas.o occ.o dtrf2.o lin.o energy.o mrec.o \
-        cma.o dtrf3.o drsp.o mlpop.o calcrab.o pgtb.o eeq.o ncoord.o prdipole.o itabrow.o \
+        ints.o intpack.o pop.o rdmat.o fermi.o reorder.o bas.o occ.o dtrf2.o lin.o energy.o \
+        cma.o drsp.o mlpop.o calcrab.o pgtb.o eeq.o ncoord.o prdipole.o \
         sscal.o cbas.o gauss.o printmos.o qsort.o rdtm.o shellocc_ref.o wr_control_atoms.o \
-        egtbcorr.o guess_qsh.o eptb.o symtranslib.o spinden.o camm.o json_output.o
+        guess_qsh.o
 
 MAINFILES= main.o 
 
@@ -131,4 +131,7 @@ $(la.f90): $(blas_level1.f90) $(blas_level2.f90) $(blas_level3.f90) $(lapack_eig
 
 #aufraeumen
 clean:
-	rm -rf *.o *.mod *genmod* $(PROG) ../build
+	rm *.o 
+	rm *.mod 
+	rm *genmod* 
+	rm $(PROG)

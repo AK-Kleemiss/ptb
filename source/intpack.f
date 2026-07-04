@@ -158,30 +158,63 @@ c           p - d
          enddo
       enddo
       return                                                                    
-  122 continue                                                                  
-c           d - d                                                               
-      do i=1,35                                                              
-         if(dabs(dd(i))-1.d-8.le.0) cycle                                               
-         d = e 
-         call opad1(lin(i),min(i),nin(i),gama,v(1),d)                                 
-         call opap4(lin(i),min(i),nin(i),gama,v(2),d)                                 
+  122 continue
+c           d - d
+      do i=1,35
+         if(dabs(dd(i))-1.d-8.le.0) cycle
+         d = e
+         call opad1(lin(i),min(i),nin(i),gama,v(1),d)
+         call opap4(lin(i),min(i),nin(i),gama,v(2),d)
 !$OMP PARALLEL PRIVATE ( j, d ) SHARED ( xyz,e,v,gama,lin,min,nin )
 !$OMP DO
          do j=1,nuc
             d(1:3) = e(1:3) - xyz(1:3,j)
-            call opaa0(lin(i),min(i),nin(i),gama,v(j+2),d)                                 
+            call opaa0(lin(i),min(i),nin(i),gama,v(j+2),d)
          enddo
-!$OMP END DO     
-!$OMP END PARALLEL      
-         do j=1,nuc+2                                                          
-            va(j)=va(j)+dd(i)*v(j)*efact                                                   
+!$OMP END DO
+!$OMP END PARALLEL
+         do j=1,nuc+2
+            va(j)=va(j)+dd(i)*v(j)*efact
          enddo
       enddo
-      return                                                                    
-  110 continue                                                                  
-      stop 'no f-fkt.'
+      return
+  110 continue
+c           any pair involving an f-shell (s-f,p-f,d-f,f-f)
+      iflo = iff1
+      ifhi = iff2
+      if(iff2.lt.iff1) then
+         iflo = iff2
+         ifhi = iff1
+      endif
+      if(iflo.eq.1) then
+         nmax = 20
+      else if(iflo.le.4) then
+         nmax = 35
+      else if(iflo.le.10) then
+         nmax = 56
+      else
+         nmax = 84
+      endif
+      do i=1,nmax
+         if(dabs(dd(i))-1.d-8.le.0) cycle
+         d = e
+         call opad1(lin(i),min(i),nin(i),gama,v(1),d)
+         call opap4(lin(i),min(i),nin(i),gama,v(2),d)
+!$OMP PARALLEL PRIVATE ( j, d ) SHARED ( xyz,e,v,gama,lin,min,nin )
+!$OMP DO
+         do j=1,nuc
+            d(1:3) = e(1:3) - xyz(1:3,j)
+            call opaa0(lin(i),min(i),nin(i),gama,v(j+2),d)
+         enddo
+!$OMP END DO
+!$OMP END PARALLEL
+         do j=1,nuc+2
+            va(j)=va(j)+dd(i)*v(j)*efact
+         enddo
+      enddo
+      return
 
-      end                                                                       
+      end
 
 c=======================================================================
 c cartesian gaussian functions (6d,10f...)
@@ -195,7 +228,7 @@ c nt : # of returns
 c va : integral
 c=======================================================================
 
-      subroutine propa_sv(nuc,xyz,a,b,etaij4,etakl4,iff1,iff2,va)   
+      subroutine propa_sv(nuc,xyz,a,b,etaij4,etakl4,iff1,iff2,va)
       implicit real*8(a-h,o-z)                                                  
 c aufpunkte,ref point,intarray
       real*8 a(3),b(3),va(nuc+1),xyz(3,nuc)                                     
@@ -338,29 +371,61 @@ c           p - d
          enddo
       enddo
       return                                                                    
-  122 continue                                                                  
-c           d - d                                                               
-      do i=1,35                                                              
-         if(dabs(dd(i))-1.d-8.le.0) cycle                                               
-         d = e 
-         call opad1(lin(i),min(i),nin(i),gama,v(1),d)                                 
+  122 continue
+c           d - d
+      do i=1,35
+         if(dabs(dd(i))-1.d-8.le.0) cycle
+         d = e
+         call opad1(lin(i),min(i),nin(i),gama,v(1),d)
 !$OMP PARALLEL PRIVATE ( j, d ) SHARED ( xyz,e,v,gama,lin,min,nin )
 !$OMP DO
          do j=1,nuc
             d(1:3) = e(1:3) - xyz(1:3,j)
-            call opaa0(lin(i),min(i),nin(i),gama,v(j+1),d)                                 
+            call opaa0(lin(i),min(i),nin(i),gama,v(j+1),d)
          enddo
-!$OMP END DO     
-!$OMP END PARALLEL      
-         do j=1,nuc+1                                                          
-            va(j)=va(j)+dd(i)*v(j)*efact                                                   
+!$OMP END DO
+!$OMP END PARALLEL
+         do j=1,nuc+1
+            va(j)=va(j)+dd(i)*v(j)*efact
          enddo
       enddo
-      return                                                                    
-  110 continue                                                                  
-      stop 'no f-fkt.'
+      return
+  110 continue
+c           any pair involving an f-shell (s-f,p-f,d-f,f-f)
+      iflo = iff1
+      ifhi = iff2
+      if(iff2.lt.iff1) then
+         iflo = iff2
+         ifhi = iff1
+      endif
+      if(iflo.eq.1) then
+         nmax = 20
+      else if(iflo.le.4) then
+         nmax = 35
+      else if(iflo.le.10) then
+         nmax = 56
+      else
+         nmax = 84
+      endif
+      do i=1,nmax
+         if(dabs(dd(i))-1.d-8.le.0) cycle
+         d = e
+         call opad1(lin(i),min(i),nin(i),gama,v(1),d)
+!$OMP PARALLEL PRIVATE ( j, d ) SHARED ( xyz,e,v,gama,lin,min,nin )
+!$OMP DO
+         do j=1,nuc
+            d(1:3) = e(1:3) - xyz(1:3,j)
+            call opaa0(lin(i),min(i),nin(i),gama,v(j+1),d)
+         enddo
+!$OMP END DO
+!$OMP END PARALLEL
+         do j=1,nuc+1
+            va(j)=va(j)+dd(i)*v(j)*efact
+         enddo
+      enddo
+      return
 
-      end                                                                       
+      end
 
 c=======================================================================
 c cartesian gaussian functions (6d,10f...)
@@ -374,7 +439,7 @@ c nt : # of returns
 c va : integral
 c=======================================================================
 
-      subroutine propa_st(nuc,xyz,a,b,etaij4,etakl4,iff1,iff2,va)   
+      subroutine propa_st(nuc,xyz,a,b,etaij4,etakl4,iff1,iff2,va)
       implicit real*8(a-h,o-z)                                                  
 c aufpunkte,ref point,intarray
       real*8 a(3),b(3),va(2),xyz(3,nuc)                                     
@@ -490,24 +555,49 @@ c           p - d
       enddo
       va(1:2)=va(1:2)*efact
       return                                                                    
-  122 continue                                                                  
-c           d - d                                                               
-      do i=1,35                                                              
-         if(dabs(dd(i))-1.d-8.le.0) cycle                                               
-         d = e 
-         call opad1(lin(i),min(i),nin(i),gama,v(1),d)                                 
-         call opap4(lin(i),min(i),nin(i),gama,v(2),d)                                 
-         do j=1,2                                                          
-!           va(j)=va(j)+dd(i)*v(j)*efact                                                   
-            va(j)=va(j)+dd(i)*v(j)                                                         
+  122 continue
+c           d - d
+      do i=1,35
+         if(dabs(dd(i))-1.d-8.le.0) cycle
+         d = e
+         call opad1(lin(i),min(i),nin(i),gama,v(1),d)
+         call opap4(lin(i),min(i),nin(i),gama,v(2),d)
+         do j=1,2
+            va(j)=va(j)+dd(i)*v(j)
          enddo
       enddo
       va(1:2)=va(1:2)*efact
-      return                                                                    
-  110 continue                                                                  
-      stop 'no f-fkt.'
+      return
+  110 continue
+c           any pair involving an f-shell (s-f,p-f,d-f,f-f)
+      iflo = iff1
+      ifhi = iff2
+      if(iff2.lt.iff1) then
+         iflo = iff2
+         ifhi = iff1
+      endif
+      if(iflo.eq.1) then
+         nmax = 20
+      else if(iflo.le.4) then
+         nmax = 35
+      else if(iflo.le.10) then
+         nmax = 56
+      else
+         nmax = 84
+      endif
+      do i=1,nmax
+         if(dabs(dd(i))-1.d-8.le.0) cycle
+         d = e
+         call opad1(lin(i),min(i),nin(i),gama,v(1),d)
+         call opap4(lin(i),min(i),nin(i),gama,v(2),d)
+         do j=1,2
+            va(j)=va(j)+dd(i)*v(j)
+         enddo
+      enddo
+      va(1:2)=va(1:2)*efact
+      return
 
-      end                                                                       
+      end
 
 c=======================================================================
 c cartesian gaussian functions (6d,10f...)
@@ -521,7 +611,7 @@ c nt : # of returns
 c va : integral
 c=======================================================================
 
-      subroutine propa_s(nuc,xyz,a,b,etaij4,etakl4,iff1,iff2,va)   
+      subroutine propa_s(nuc,xyz,a,b,etaij4,etakl4,iff1,iff2,va)
       implicit real*8(a-h,o-z)                                                  
 c aufpunkte,ref point,intarray
       real*8 a(3),b(3),va(1),xyz(3,nuc)                                     
@@ -628,22 +718,47 @@ c           p - d
       enddo
       va(1)=va(1)*efact
       return                                                                    
-  122 continue                                                                  
-c           d - d                                                               
-      do i=1,35                                                              
-         if(dabs(dd(i))-1.d-8.le.0) cycle                                               
-         d = e 
-         call opad1(lin(i),min(i),nin(i),gama,v(1),d)                                 
-         do j=1,1                                                          
+  122 continue
+c           d - d
+      do i=1,35
+         if(dabs(dd(i))-1.d-8.le.0) cycle
+         d = e
+         call opad1(lin(i),min(i),nin(i),gama,v(1),d)
+         do j=1,1
             va(j)=va(j)+dd(i)*v(j)
          enddo
       enddo
       va(1)=va(1)*efact
-      return                                                                    
-  110 continue                                                                  
-      stop 'no f-fkt.'
+      return
+  110 continue
+c           any pair involving an f-shell (s-f,p-f,d-f,f-f)
+      iflo = iff1
+      ifhi = iff2
+      if(iff2.lt.iff1) then
+         iflo = iff2
+         ifhi = iff1
+      endif
+      if(iflo.eq.1) then
+         nmax = 20
+      else if(iflo.le.4) then
+         nmax = 35
+      else if(iflo.le.10) then
+         nmax = 56
+      else
+         nmax = 84
+      endif
+      do i=1,nmax
+         if(dabs(dd(i))-1.d-8.le.0) cycle
+         d = e
+         call opad1(lin(i),min(i),nin(i),gama,v(1),d)
+         do j=1,1
+            va(j)=va(j)+dd(i)*v(j)
+         enddo
+      enddo
+      va(1)=va(1)*efact
+      return
 
-      end                                                                       
+      end
 
 c=======================================================================
 c cartesian gaussian functions (6d,10f...)
@@ -657,7 +772,7 @@ c nt : # of returns
 c va : integral
 c=======================================================================
 
-      subroutine propa_dip(c,a,b,etaij4,etakl4,iff1,iff2,va)   
+      subroutine propa_dip(c,a,b,etaij4,etakl4,iff1,iff2,va)
       implicit real*8(a-h,o-z)                                                  
 c aufpunkte,ref point,intarray
       real*8 c(3),a(3),b(3),va(3)
@@ -761,27 +876,51 @@ c           p - d
       enddo
       va(1:3)=va(1:3)*efact
       return                                                                    
-  122 continue                                                                  
-c           d - d                                                               
-      do i=1,35                                                              
-         if(dabs(dd(i))-1.d-8.le.0) cycle                                               
-         call opab1(lin(i),min(i),nin(i),gama,v,d)                                 
-         do j=1,3                                                          
+  122 continue
+c           d - d
+      do i=1,35
+         if(dabs(dd(i))-1.d-8.le.0) cycle
+         call opab1(lin(i),min(i),nin(i),gama,v,d)
+         do j=1,3
             va(j)=va(j)-dd(i)*v(j)
          enddo
       enddo
       va(1:3)=va(1:3)*efact
-      return                                                                    
-  110 continue                                                                  
-      stop 'no f-fkt.'
+      return
+  110 continue
+c           any pair involving an f-shell (s-f,p-f,d-f,f-f)
+      iflo = iff1
+      ifhi = iff2
+      if(iff2.lt.iff1) then
+         iflo = iff2
+         ifhi = iff1
+      endif
+      if(iflo.eq.1) then
+         nmax = 20
+      else if(iflo.le.4) then
+         nmax = 35
+      else if(iflo.le.10) then
+         nmax = 56
+      else
+         nmax = 84
+      endif
+      do i=1,nmax
+         if(dabs(dd(i))-1.d-8.le.0) cycle
+         call opab1(lin(i),min(i),nin(i),gama,v,d)
+         do j=1,3
+            va(j)=va(j)-dd(i)*v(j)
+         enddo
+      enddo
+      va(1:3)=va(1:3)*efact
+      return
 
-      end                                                                       
+      end
 
 c=======================================================================
 c x^2,y^2,z^2 only
 c=======================================================================
 
-      subroutine propa_sec(c,a,b,etaij4,etakl4,iff1,iff2,va)   
+      subroutine propa_sec(c,a,b,etaij4,etakl4,iff1,iff2,va)
       implicit real*8(a-h,o-z)                                                  
 c aufpunkte,ref point,intarray
       real*8 c(3),a(3),b(3),va(3)
@@ -885,23 +1024,47 @@ c           p - d
       enddo
       va(1:3)=va(1:3)*efact
       return                                                                    
-  122 continue                                                                  
-c           d - d                                                               
-      do i=1,35                                                              
-         if(dabs(dd(i))-1.d-8.le.0) cycle                                               
-         call opab4(lin(i),min(i),nin(i),gama,v,d)                                 
-         do j=1,3                                                          
+  122 continue
+c           d - d
+      do i=1,35
+         if(dabs(dd(i))-1.d-8.le.0) cycle
+         call opab4(lin(i),min(i),nin(i),gama,v,d)
+         do j=1,3
             va(j)=va(j)+dd(i)*v(j)
          enddo
       enddo
       va(1:3)=va(1:3)*efact
-      return                                                                    
-  110 continue                                                                  
-      stop 'no f-fkt.'
+      return
+  110 continue
+c           any pair involving an f-shell (s-f,p-f,d-f,f-f)
+      iflo = iff1
+      ifhi = iff2
+      if(iff2.lt.iff1) then
+         iflo = iff2
+         ifhi = iff1
+      endif
+      if(iflo.eq.1) then
+         nmax = 20
+      else if(iflo.le.4) then
+         nmax = 35
+      else if(iflo.le.10) then
+         nmax = 56
+      else
+         nmax = 84
+      endif
+      do i=1,nmax
+         if(dabs(dd(i))-1.d-8.le.0) cycle
+         call opab4(lin(i),min(i),nin(i),gama,v,d)
+         do j=1,3
+            va(j)=va(j)+dd(i)*v(j)
+         enddo
+      enddo
+      va(1:3)=va(1:3)*efact
+      return
 
-      end                                                                       
+      end
 
-      subroutine propa_dq(c,a,b,etaij4,etakl4,iff1,iff2,va)   
+      subroutine propa_dq(c,a,b,etaij4,etakl4,iff1,iff2,va)
       implicit real*8(a-h,o-z)                                                  
 c aufpunkte,ref point,intarray
       real*8 c(3),a(3),b(3),va(9)
@@ -1010,22 +1173,47 @@ c           p - d
       enddo
       va(1:9)=va(1:9)*efact
       return                                                                    
-  122 continue                                                                  
-c           d - d                                                               
-      do i=1,35                                                              
-         if(dabs(dd(i))-1.d-8.le.0) cycle                                               
-         call opab1 (lin(i),min(i),nin(i),gama,v,d)                                 
-         call opab46(lin(i),min(i),nin(i),gama,v,d)                                 
-         do j=1,9                                                          
+  122 continue
+c           d - d
+      do i=1,35
+         if(dabs(dd(i))-1.d-8.le.0) cycle
+         call opab1 (lin(i),min(i),nin(i),gama,v,d)
+         call opab46(lin(i),min(i),nin(i),gama,v,d)
+         do j=1,9
             va(j)=va(j)+dd(i)*v(j)
          enddo
       enddo
       va(1:9)=va(1:9)*efact
-      return                                                                    
-  110 continue                                                                  
-      stop 'no f-fkt.'
+      return
+  110 continue
+c           any pair involving an f-shell (s-f,p-f,d-f,f-f)
+      iflo = iff1
+      ifhi = iff2
+      if(iff2.lt.iff1) then
+         iflo = iff2
+         ifhi = iff1
+      endif
+      if(iflo.eq.1) then
+         nmax = 20
+      else if(iflo.le.4) then
+         nmax = 35
+      else if(iflo.le.10) then
+         nmax = 56
+      else
+         nmax = 84
+      endif
+      do i=1,nmax
+         if(dabs(dd(i))-1.d-8.le.0) cycle
+         call opab1 (lin(i),min(i),nin(i),gama,v,d)
+         call opab46(lin(i),min(i),nin(i),gama,v,d)
+         do j=1,9
+            va(j)=va(j)+dd(i)*v(j)
+         enddo
+      enddo
+      va(1:9)=va(1:9)*efact
+      return
 
-      end                                                                       
+      end
 
 ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 

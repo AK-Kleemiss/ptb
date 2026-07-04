@@ -10,7 +10,7 @@ subroutine sint(nat,nao,at,xyz,rab,s,norm)
       real*8, intent(out)  :: s(nao*(nao+1)/2)
       real*8, intent(out)  :: norm(nao)
 
-      real*8 ss(6,6)
+      real*8 ss(10,10)
       real*8 tmp1,tmp2,tmp3,tmp4,intcut,s00,apb
       real*8 r1,r2,t1,t2,t3,t4,f,ci,cc,cj,alpi,rab2,ab,est
       real*8 rc(3),ra(3),rb(3),p(3),g(3),alpj,va(1),alpc,ccc
@@ -122,7 +122,7 @@ subroutine stint(nat,nao,at,xyz,rab,s,t,norm)
       real*8, intent(out)  :: t(nao*(nao+1)/2)
       real*8, intent(out)  :: norm(nao)
 
-      real*8 ss(6,6), tt(6,6), va2(6,6)
+      real*8 ss(10,10), tt(10,10), va2(10,10)
       real*8 tmp1,tmp2,tmp3,tmp4,intcut,s00,apb
       real*8 r1,r2,t1,t2,t3,t4,f,ci,cc,cj,alpi,rab2,ab,est
       real*8 rc(3),ra(3),rb(3),p(3),g(3),alpj,va(2+nat),alpc,ccc
@@ -238,7 +238,7 @@ subroutine tint(nat,nao,at,xyz,rab,t,norm)
       real*8, intent(in)   :: norm(nao)
       real*8, intent(out)  :: t(nao*(nao+1)/2)
 
-      real*8 ss(6,6), tt(6,6), va2(6,6)
+      real*8 ss(10,10), tt(10,10), va2(10,10)
       real*8 tmp1,tmp2,tmp3,tmp4,intcut,s00,apb
       real*8 r1,r2,t1,t2,t3,t4,f,ci,cc,cj,alpi,rab2,ab,est
       real*8 rc(3),ra(3),rb(3),p(3),g(3),alpj,va(2+nat),alpc,ccc
@@ -345,7 +345,7 @@ subroutine stvint(nat,nao,at,xyz,rab,z,s,t,v,norm)
       real*8, intent(out)  :: v(nao*(nao+1)/2)
       real*8, intent(out)  :: norm(nao)
 
-      real*8 ss(6,6), tt(6,6), vv(6,6), va2(6,6)
+      real*8 ss(10,10), tt(10,10), vv(10,10), va2(10,10)
       real*8 tmp1,tmp2,tmp3,tmp4,intcut,s00,apb
       real*8 r1,r2,t1,t2,t3,t4,f,ci,cc,cj,alpi,rab2,ab,est
       real*8 rc(3),ra(3),rb(3),p(3),g(3),alpj,va(2+nat),alpc,ccc
@@ -477,7 +477,7 @@ subroutine dipint(nat,nao,at,xyz,rab,norm,pnt,d)
       real*8, intent(in)   :: pnt(3) ! reference point
       real*8, intent(out)  :: d(nao*(nao+1)/2,3)
 
-      real*8 ss3(6,6,3)
+      real*8 ss3(10,10,3)
       real*8 tmp1,tmp2,tmp3,tmp4,intcut,s00,apb
       real*8 r1,r2,t1,t2,t3,t4,f,ci,cc,cj,alpi,rab2,ab,est
       real*8 rc(3),ra(3),rb(3),alpj,va(3),alpc,ccc
@@ -586,7 +586,7 @@ subroutine secint(nat,nao,at,xyz,rab,norm,pnt,d)
       real*8, intent(in)   :: pnt(3) ! reference point
       real*8, intent(out)  :: d(nao*(nao+1)/2,3)
 
-      real*8 ss3(6,6,3)
+      real*8 ss3(10,10,3)
       real*8 tmp1,tmp2,tmp3,tmp4,intcut,s00,apb
       real*8 r1,r2,t1,t2,t3,t4,f,ci,cc,cj,alpi,rab2,ab,est
       real*8 rc(3),ra(3),rb(3),alpj,va(6),alpc,ccc
@@ -695,7 +695,7 @@ subroutine dqint(nat,nao,at,xyz,rab,norm,pnt)
       real*8, intent(in)   :: norm(nao)
       real*8, intent(in)   :: pnt(3) ! reference point
 
-      real*8 ss3(6,6,9)
+      real*8 ss3(10,10,9)
       real*8 tmp1,tmp2,tmp3,tmp4,intcut,s00,apb
       real*8 r1,r2,t1,t2,t3,t4,f,ci,cc,cj,alpi,rab2,ab,est
       real*8 rc(3),ra(3),rb(3),alpj,va(9),alpc,ccc
