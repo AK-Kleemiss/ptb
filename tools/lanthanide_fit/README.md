@@ -43,6 +43,17 @@ This produces 2250 relaxed structures across La-Lu. For chunked or exploratory
 runs, keep using `--per-element N` with a smaller value; an explicit
 `--per-element` value takes precedence over `--training-set`.
 
+To continue an interrupted run from an existing manifest or `work/mace_structures`
+tree, add `--resume`:
+
+```bash
+python setup_mace_osaka.py --training-set --device cuda --resume
+```
+
+If the manifest is missing but the XYZ tree exists, the generator recovers the
+available records from the case IDs and XYZ coordinates, then generates only the
+missing per-element structures.
+
 This creates:
 
 - `.venv-mace-osaka/` with CUDA PyTorch, `mace-torch>=0.3.12`, ASE, NumPy, and SciPy

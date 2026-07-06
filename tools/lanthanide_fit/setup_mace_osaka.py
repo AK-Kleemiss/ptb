@@ -144,6 +144,7 @@ def main() -> None:
     parser.add_argument("--cpu-torch", action="store_true", help="Install CPU-only PyTorch instead of a CUDA wheel.")
     parser.add_argument("--force-model-download", action="store_true")
     parser.add_argument("--setup-only", action="store_true")
+    parser.add_argument("--resume", action="store_true", help="Continue from an existing manifest or XYZ tree instead of starting over.")
     args = parser.parse_args()
     per_element = args.per_element if args.per_element is not None else (
         TRAINING_PER_ELEMENT if args.training_set else PILOT_PER_ELEMENT
@@ -169,7 +170,7 @@ def main() -> None:
         "--device", args.device,
         "--dtype", args.dtype,
         "--max-steps", str(args.max_steps),
-    ], cwd=ROOT, env=env)
+    ] + (["--resume"] if args.resume else []), cwd=ROOT, env=env)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,44 @@
+{
+  "snapshot_date": "2026-07-06",
+  "repository": "D:\\git\\ptb",
+  "commit": "c015f8d",
+  "campaign": "lanthanide_mace_osaka_structure_generation",
+  "target_per_element": 150,
+  "target_total": 2250,
+  "current_total_recovered_from_xyz": 409,
+  "current_manifest": "tools/lanthanide_fit/work/mace_manifest.recovered.jsonl",
+  "structure_root": "tools/lanthanide_fit/work/mace_structures",
+  "model": {
+    "path": "tools/lanthanide_fit/models/mace-osaka26-small.model",
+    "sha256": "92865eee31cdf41b639213cd82e39e6ded86fe8690f1bb3da98506c63aff6878"
+  },
+  "source_machine_cuda_probe": {
+    "torch": "2.11.0+cu128",
+    "cuda_available": true,
+    "cuda_version": "12.8",
+    "device0": "NVIDIA GeForce RTX 3090"
+  },
+  "counts_by_element": {
+    "La": 150,
+    "Ce": 154,
+    "Pr": 85,
+    "Nd": 4,
+    "Pm": 4,
+    "Sm": 4,
+    "Eu": 4,
+    "Gd": 4,
+    "Tb": 0,
+    "Dy": 0,
+    "Ho": 0,
+    "Er": 0,
+    "Tm": 0,
+    "Yb": 0,
+    "Lu": 0
+  },
+  "counts_by_split_recovered": {
+    "train": 324,
+    "validation": 85
+  },
+  "continue_command": "python tools\\lanthanide_fit\\setup_mace_osaka.py --training-set --device cuda --resume",
+  "rebuild_manifest_command": "cd tools\\lanthanide_fit; python -m ptb_lnf.mace_generate --model models\\mace-osaka26-small.model --out work\\mace_structures --manifest work\\mace_manifest.recovered.jsonl --per-element 0 --no-relax --resume"
+}

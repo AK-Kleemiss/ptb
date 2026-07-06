@@ -40,6 +40,79 @@ class MaceStructureRecord:
     min_distance_angstrom: float
 
 
+def read_xyz(path: Path) -> list[tuple[str, float, float, float]]:
+    lines = path.read_text().splitlines()
+    if not lines:
+        raise ValueError(f"empty XYZ file: {path}")
+    nat = int(lines[0].strip())
+    atoms: list[tuple[str, float, float, float]] = []
+    for line in lines[2:2 + nat]:
+        sym, x, y, z = line.split()[:4]
+        atoms.append((sym, float(x), float(y), float(z)))
+    if len(atoms) != nat:
+        raise ValueError(f"XYZ atom count mismatch in {path}: expected {nat}, got {len(atoms)}")
+    return atoms
+
+
+def parse_case_id(case_id: str) -> tuple[str, int, str, int]:
+    parts = case_id.split("_")
+    if len(parts) < 4 or not parts[-1].startswith("mace"):
+        raise ValueError(f"cannot parse MACE case id: {case_id}")
+    element = parts[0]
+    oxidation_state = int(parts[1])
+    conformer = int(parts[-1][4:])
+    ligand_class = "_".join(parts[2:-1])
+    return element, oxidation_state, ligand_class, conformer
+
+
+def record_from_xyz(path: Path, model_path: Path) -> MaceStructureRecord:
+    case_id = path.stem
+    element, ox, ligand_class, conformer = parse_case_id(case_id)
+    z = dict(LANTHANIDES)[element]
+    atoms = read_xyz(path)
+    lines = path.read_text().splitlines()
+    comment = lines[1] if len(lines) > 1 else ""
+    relaxed = "relaxed=True" in comment or "relaxed=true" in comment
+    split = "validation" if (z + ox + conformer) % 5 == 0 else "train"
+    return MaceStructureRecord(
+        case_id=case_id,
+        element=element,
+        atomic_number=z,
+        oxidation_state=ox,
+        charge=ox,
+        spin_multiplicity=DEFAULT_SPIN_MULTIPLICITY.get((element, ox), 1),
+        ligand_class=ligand_class,
+        ligand_recipe="recovered_from_xyz",
+        conformer=conformer,
+        conformer_source="mace_osaka26_diverse_relaxed" if relaxed else "diverse_seed_unrelaxed",
+        xyz_path=str(path),
+        split=split,
+        mace_model=str(model_path),
+        mace_relaxed=relaxed,
+        mace_energy_ev=None,
+        uniqueness_signature=uniqueness_signature(atoms),
+        min_distance_angstrom=min_distance(atoms),
+    )
+
+
+def load_existing_records(out: Path, manifest: Path, model_path: Path) -> list[MaceStructureRecord]:
+    if manifest.exists():
+        records = []
+        for line in manifest.read_text().splitlines():
+            if line.strip():
+                records.append(MaceStructureRecord(**json.loads(line)))
+        return records
+    if not out.exists():
+        return []
+    records = []
+    for xyz in sorted(out.glob("*/*/*.xyz")):
+        try:
+            records.append(record_from_xyz(xyz, model_path))
+        except (KeyError, ValueError) as exc:
+            print(f"Skipping unrecognized XYZ during resume scan: {xyz} ({exc})")
+    return records
+
+
 def _unit(v: np.ndarray) -> np.ndarray:
     n = np.linalg.norm(v)
     if n < 1e-12:
@@ -264,10 +337,11 @@ def generate(
     fmax: float,
     dtype: str = "float64",
     no_relax: bool = False,
+    resume: bool = False,
 ) -> list[MaceStructureRecord]:
     rng = random.Random(seed)
-    seen: set[str] = set()
-    records: list[MaceStructureRecord] = []
+    records = load_existing_records(out, manifest, model_path) if resume else []
+    seen: set[str] = {record.uniqueness_signature for record in records}
     out.mkdir(parents=True, exist_ok=True)
 
     for symbol, z in LANTHANIDES:
@@ -347,6 +421,7 @@ def main() -> None:
     parser.add_argument("--max-steps", type=int, default=120)
     parser.add_argument("--fmax", type=float, default=0.08)
     parser.add_argument("--no-relax", action="store_true", help="Generate diverse seeds without MACE relaxation; useful for fast tests only.")
+    parser.add_argument("--resume", action="store_true", help="Reuse existing manifest/XYZ records and generate only missing per-element structures.")
     args = parser.parse_args()
     per_element = args.per_element if args.per_element is not None else (
         TRAINING_PER_ELEMENT if args.training_set else PILOT_PER_ELEMENT
@@ -363,6 +438,7 @@ def main() -> None:
         max_steps=args.max_steps,
         fmax=args.fmax,
         no_relax=args.no_relax,
+        resume=args.resume,
     )
     by_split: dict[str, int] = {}
     by_element: dict[str, int] = {}
