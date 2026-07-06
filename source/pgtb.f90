@@ -13,14 +13,14 @@
 !                        non-linalg is < 5 %
 !! ------------------------------------------------------------------------
 !        read(1,*) expscal  (2,1:10,j)   ! 61-70
-!        read(1,*) shell_xi  (1:10,j)    ! 71-80
-!        read(1,*) shell_cnf1(1:10,j)    ! 81-90
-!        read(1,*) shell_cnf2(1:10,j)    ! 91-100
-!        read(1,*) shell_cnf3(1:10,j)    ! 101-110
+!        read(1,*) shell_xi  (1:13,j)    ! slots 1-9 real per-shell (7 normally, 9 for lanthanides' f-shells),
+!        read(1,*) shell_cnf1(1:13,j)    ! slots 10-13 special global constants (see pgtb.f90 usage sites)
+!        read(1,*) shell_cnf2(1:13,j)    !
+!        read(1,*) shell_cnf3(1:13,j)    !
 !        read(1,*) expscal  (3,1:10,j)   ! 111-120
 !        read(1,*) shell_cnf4(1:10,j)    ! 121-130
-!        read(1,*) shell_resp(1:10,j,1)  ! 131-140
-!        read(1,*) shell_resp(1:10,j,2)  ! 141-150
+!        read(1,*) shell_resp(1:13,j,1)  !
+!        read(1,*) shell_resp(1:13,j,2)  !
 module pgtb_
    use purification_settings, only : tPurificationSet
    use metrics
@@ -156,7 +156,7 @@ contains
       call ncoord_erf(n,at,rab,-7.5_wp,cnorg)
       call eeq(n,at,rab,chrg,cnorg,.false., &
    !             xi scal          gam            CN fac scal      alpha scal
-      &         shell_cnf1(9,:),shell_cnf1(8,:),shell_cnf2(8,:), shell_cnf3(8,:), &
+      &         shell_cnf1(11,:),shell_cnf1(10,:),shell_cnf2(10,:), shell_cnf3(10,:), &
       &         qeeq)    !  slightly modified EEQ charges qeeq for first iter Ves
 
       if(pr)then
@@ -184,6 +184,7 @@ contains
             enddo
          enddo
       enddo
+
 
    !  simple ECP
       if(pr)write(*,*) 'computing Vecp ...'
@@ -358,12 +359,13 @@ contains
                   lj  = bas_lsh(jsh,atj)
                   xk  = (shell_cnf4(2,ati)+shell_cnf4(2,atj)) * xiter(iter)
                   pol = ((hi-hj)/hij)**2
-                  keav= 0.5d0*(shell_resp(8+li,ati,2)+shell_resp(8+lj,atj,2))
+                  ! per-l keav lookup lives in the dedicated special slots 10..13 (s,p,d,f)
+                  keav= 0.5d0*(shell_resp(10+li,ati,2)+shell_resp(10+lj,atj,2))
                   tmp = ssh * keav * (1_wp-pol*scfpar(1)) * (1_wp+xk/r) ! fit yields same values for iter1,2
                else                         ! same atoms
                   if(ish.ne.jsh) then       ! s-s', p-p', d-d' off-diagonal, li=lj because S=0 otherwise
                      tmp2= shell_cnf4(4+li,ati) * ziter(iter)
-                     tmp = ssh * tmp2 + shell_cnf3(9,ati)* tmp2 * hij * SS(ij)**2 ! second term only for more than 2 shells of same l
+                     tmp = ssh * tmp2 + shell_cnf3(11,ati)* tmp2 * hij * SS(ij)**2 ! second term only for more than 2 shells of same l
                   else
                      tmp = ssh
                   endif
@@ -385,13 +387,13 @@ contains
    !   for XC LR damping
             k = 0
             do i=1,n
-               gq(i) = 1_wp-(shell_xi(9,at(i))*pa(i)+shell_xi(10,at(i))*pa(i)**2) ! gq is temp., important charge scaling
-               hi = shell_cnf3(10,at(i)) + (cn(i)-avcn(at(i)))*shell_resp(10,at(i),1)
+               gq(i) = 1_wp-(shell_xi(11,at(i))*pa(i)+shell_xi(12,at(i))*pa(i)**2) ! gq is temp., important charge scaling
+               hi = shell_cnf3(12,at(i)) + (cn(i)-avcn(at(i)))*shell_resp(12,at(i),1)
                do j=1,i
                   k = k + 1
-                  r = hi + shell_cnf3(10,at(j)) + (cn(j)-avcn(at(j)))*shell_resp(10,at(j),1)  ! sum of special radii
+                  r = hi + shell_cnf3(12,at(j)) + (cn(j)-avcn(at(j)))*shell_resp(12,at(j),1)  ! sum of special radii
                   t8= (rab(k)-r)/r
-                  xab(k) = 0.5_wp*(1_wp+erf(-1.8_wp*t8)) ! parameter not important due to redundancy with shell_cnf3(10,)
+                  xab(k) = 0.5_wp*(1_wp+erf(-1.8_wp*t8)) ! parameter not important due to redundancy with shell_cnf3(12,)
                enddo
             enddo
             k = 0
@@ -410,7 +412,7 @@ contains
                   Hmat(k) = Hmat(k) + P(k) * (hi + hj) * xab(lin(ib,ia))
                enddo
                k = k + 1
-               Hmat(k) = Hmat(k) + 2d0*P(k) * shell_xi(8,ati) * hi * xab(lin(ia,ia)) ! scaled diag
+               Hmat(k) = Hmat(k) + 2d0*P(k) * shell_xi(10,ati) * hi * xab(lin(ia,ia)) ! scaled diag
             enddo
          endif
 
@@ -567,7 +569,7 @@ contains
                do jsh=1,bas_nsh(atk)                ! shells of atom
                   l =bas_lsh(jsh,atk)
                   nl=llao2(l)
-                  f1=psh(jsh,k) * shell_cnf2(10,atk)/dble(nl)
+                  f1=psh(jsh,k) * shell_cnf2(12,atk)/dble(nl)
                   ! element scaling in first iter to decouple 1. and 2. iter and
                   ! to account for missing P-dependent term of 2. iter
                   do l=1,nl                         ! AOs of shell jsh
@@ -1174,13 +1176,13 @@ contains
             if(ia.ne.ib) then            ! different atoms
                xk  = (shell_cnf4(2,ati)+shell_cnf4(2,atj))
                pol = ((hi-hj)/hij)**2
-               keav= 0.5_wp*(shell_cnf2(9,ati) + shell_cnf2(9,atj))
+               keav= 0.5_wp*(shell_cnf2(11,ati) + shell_cnf2(11,atj))
                tmp = ssh * keav * (1_wp-pol*scfpar(8)) * (1_wp+xk/r) ! fit yields same values for iter1,2, parameter different from twoscf
             else                         ! same atoms
                jsh = shell2ao(j)
                if(ish.ne.jsh) then       ! s-s', p-p', d-d' off-diagonal, li=lj because S=0 otherwise
                   tmp2= shell_cnf4(3+li,ati)
-                  tmp = ssh * tmp2 + shell_cnf3(9,ati)* tmp2 * hij * SS(ij)**2
+                  tmp = ssh * tmp2 + shell_cnf3(11,ati)* tmp2 * hij * SS(ij)**2
                else
                   tmp = ssh
                endif
@@ -1193,11 +1195,11 @@ contains
    ! H1
       k = 0
       do i=1,n
-         gq(i) = 1_wp-(shell_xi(9,at(i))*pa(i)+shell_xi(10,at(i))*pa(i)**2)
-         hi = shell_cnf3(10,at(i)) + (cn(i)-avcn(at(i)))*shell_resp(10,at(i),1)
+         gq(i) = 1_wp-(shell_xi(11,at(i))*pa(i)+shell_xi(12,at(i))*pa(i)**2)
+         hi = shell_cnf3(12,at(i)) + (cn(i)-avcn(at(i)))*shell_resp(12,at(i),1)
          do j=1,i
             k = k + 1
-            r = hi + shell_cnf3(10,at(j)) + (cn(j)-avcn(at(j)))*shell_resp(10,at(j),1)
+            r = hi + shell_cnf3(12,at(j)) + (cn(j)-avcn(at(j)))*shell_resp(12,at(j),1)
             t8= (rab(k)-r)/r
             xab(j,i) = 0.5_wp*(1_wp+erf(-1.8_wp*t8))
             xab(i,j) = xab(j,i)
@@ -1225,7 +1227,7 @@ contains
             Hmat(k) = Hmat(k) + P(k) * (hi + hj) * xab(ib,ia) - S(k)*(vi+vj)
          enddo
          k = k + 1
-         Hmat(k) = Hmat(k) + 2d0*P(k) * shell_xi(8,ati) * hi * xab(ia,ia) - 2d0*S(k)*vi
+         Hmat(k) = Hmat(k) + 2d0*P(k) * shell_xi(10,ati) * hi * xab(ia,ia) - 2d0*S(k)*vi
       enddo
 
       call solve3 (ndim,nel,nopen,homo,eT,focc,Hmat,S,P)
@@ -1382,7 +1384,7 @@ contains
       do i=1,n
          call shellocc_ref(at(i),atocc) ! ref. atomic pop.
          tmp = 0d0
-         if(iter.gt.2) tmp = shell_resp(9,at(i),1)
+         if(iter.gt.2) tmp = shell_resp(11,at(i),1)
          do ish=1,bas_nsh(at(i))
             qa = atocc(ish)-psh(ish,i)
             scal(ish,i) = expscal(3,ish,at(i)) * (1d0 + tmp*qa)

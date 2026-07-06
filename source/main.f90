@@ -41,7 +41,7 @@ program gTB
    logical :: used_default_par
 
    character(len=256)      :: fname,pname,bname,atmp,arg1
-   character(len=150)      :: pline
+   character(len=220)      :: pline
 
    !> Handle purification
    type(tPurificationSet), allocatable :: pur
@@ -120,7 +120,7 @@ program gTB
    par_idx = 0
    pline = parline(); read(pline,*) glob_par (1:10)
    pline = parline(); read(pline,*) glob_par(11:20)
-   do i=1,72 ! change here for new elements
+   do i=1,86 ! change here for new elements
       pline = parline(); read(pline,*) j
       pline = parline(); read(pline,*) ener_par1 (1:10,j)    ! 1 -10
       pline = parline(); read(pline,*) ener_par2 (1:10,j)    ! 11-20
@@ -129,14 +129,14 @@ program gTB
       pline = parline(); read(pline,*) ener_par4 (1:10,j)    ! 41-50
       pline = parline(); read(pline,*) ener_par5 (1:10,j)    ! 51-60
       pline = parline(); read(pline,*) expscal  (2,1:10,j)   ! 61-70  PTB
-      pline = parline(); read(pline,*) shell_xi  (1:10,j)    ! 71-80    "
-      pline = parline(); read(pline,*) shell_cnf1(1:10,j)    ! 81-90    "
-      pline = parline(); read(pline,*) shell_cnf2(1:10,j)    ! 91-100   "
-      pline = parline(); read(pline,*) shell_cnf3(1:10,j)    ! 101-110  "
+      pline = parline(); read(pline,*) shell_xi  (1:13,j)    ! slots 1-9 real per-shell, 10-13 special  "
+      pline = parline(); read(pline,*) shell_cnf1(1:13,j)    ! "
+      pline = parline(); read(pline,*) shell_cnf2(1:13,j)    ! "
+      pline = parline(); read(pline,*) shell_cnf3(1:13,j)    ! "
       pline = parline(); read(pline,*) expscal  (3,1:10,j)   ! 111-120  "
       pline = parline(); read(pline,*) shell_cnf4(1:10,j)    ! 121-130  "
-      pline = parline(); read(pline,*) shell_resp(1:10,j,1)  ! 131-140  "
-      pline = parline(); read(pline,*) shell_resp(1:10,j,2)  ! 141-150  "
+      pline = parline(); read(pline,*) shell_resp(1:13,j,1)  ! "
+      pline = parline(); read(pline,*) shell_resp(1:13,j,2)  ! "
    enddo
    if (.not.used_default_par) close(1)
 
@@ -180,6 +180,19 @@ program gTB
 ! read coordinates
    call rd(.true.,fname,n,xyz,at)
    call calcrab(n,at,xyz,rab)
+
+! lanthanides (Ce-Lu, Z=58-71) have no independently fitted PTB parameters;
+! all of them currently borrow La's (Z=57) parameter block as a rough
+! nearest-neighbor approximation, not a real fit. Warn loudly so results
+! are never mistaken for validated PTB output.
+   do i=1,n
+      if (at(i).ge.58.and.at(i).le.71) then
+         print '(a,i0,a,i0,a)', "WARNING: atom ",i," is Z=",at(i), &
+         & " (a lanthanide, Ce-Lu). PTB has no independent fit for this "// &
+         & "element range; parameters are borrowed from La (Z=57) as an "// &
+         & "unvalidated approximation. Treat results with heavy skepticism."
+      end if
+   enddo
 
    call setavcn   ! av. el. CNs with erfs=-2.0
 
@@ -236,7 +249,7 @@ program gTB
 contains
 
    function parline() result(line)
-      character(len=150) :: line
+      character(len=220) :: line
       if (used_default_par) then
          par_idx = par_idx + 1
          line = default_atompara(par_idx)

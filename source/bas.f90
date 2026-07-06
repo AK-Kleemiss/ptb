@@ -277,6 +277,7 @@ subroutine rdbas(fname)
             bas_npr(bas_nsh(iat),iat)=np
             do i=1,np
                call get_line(atmp,at_end)
+               if (at_end) goto 20
                read(atmp,*) bas_ec(1,i,bas_nsh(iat),iat),bas_ec(2,i,bas_nsh(iat),iat)
             enddo
          endif

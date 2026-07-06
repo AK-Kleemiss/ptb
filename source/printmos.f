@@ -169,12 +169,13 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       integer nbf,new,ncent,at(ncent)
       real*8  s(nbf,nbf),x(ncao,nbf)
       real*8  xcart
-      integer lll(20),firstd(nbf),idprev
+      integer lll(20),firstd(nbf),blockl(nbf),idprev
       integer i,j,k,jj,mm,m
       data lll/1,2,2,2,3,3,3,3,3,3,4,4,4,4,4,4,4,4,4,4/
 
       real*8 trafo(5,6)
-      
+      real*8 trafof(7,10)
+
       integer lao(ncao),iat,iao
       integer lladr(0:3),ll(0:3)
       data lladr  /1,3,6,10/
@@ -190,15 +191,15 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
             enddo
          enddo
       enddo
-      
-      
-      
+
+
+
 ! Sign of 'trafo(2,:)' changed with respect to xTB
-      trafo = 0.0d0 
-! x2 
+      trafo = 0.0d0
+! x2
       trafo(1,1)=1./dsqrt(2.d0)*dsqrt(3.d0/2.d0)
       trafo(2,1)=-0.50d0
-! y2 
+! y2
       trafo(1,2)=-1./dsqrt(2.d0)*dsqrt(3.d0/2.d0)
       trafo(2,2)=-0.50d0
 ! z2
@@ -209,6 +210,26 @@ c rest
       trafo(4,5)=1.0d0
       trafo(5,6)=1.0d0
 
+! f-shell CAO(xxx,yyy,zzz,xxy,xxz,xyy,yyz,xzz,yzz,xyz) <- SAO(fz3,fxz2,fyz2,
+! fz(x2-y2),fxyz,fx(x2-3y2),fy(3x2-y2)); transpose of the trafo used in dtrf2.f
+      trafof = 0.0d0
+      trafof(1,3)= 2.0d0
+      trafof(1,5)=-3.0d0
+      trafof(1,7)=-3.0d0
+      trafof(2,1)=-1.0d0
+      trafof(2,6)=-1.0d0
+      trafof(2,8)= 4.0d0
+      trafof(3,2)=-1.0d0
+      trafof(3,4)=-1.0d0
+      trafof(3,9)= 4.0d0
+      trafof(4,5)= 1.0d0
+      trafof(4,7)=-1.0d0
+      trafof(5,10)=2.0d0
+      trafof(6,1)= 1.0d0
+      trafof(6,6)=-3.0d0
+      trafof(7,2)=-1.0d0
+      trafof(7,4)= 3.0d0
+
       new=ncao-nbf
 
       if(new.eq.0) then
@@ -217,37 +238,56 @@ c rest
       endif
 
       firstd = 0
-      i=1    
-      j=0 
+      blockl = 0
+      i=1
+      j=0
       ! lao is still in old dimensions (i.e., ncao) while s comes with nsao
  42   if(lao(i).gt.4.and.lao(i).le.10)then
          firstd(i-j:i-j+4)=i-j
+         blockl(i-j)=2
          j=j+1
          i=i+5
+      else if(lao(i).gt.10)then
+         firstd(i-j:i-j+6)=i-j
+         blockl(i-j)=3
+         j=j+3
+         i=i+9
       endif
       i=i+1
       if(i.lt.ncao)goto 42
       ! sanity check
       if(new.ne.j) stop 'error in sao2cao trafo'
-     
+
       x=0.0d0
 
       do i=1,nbf ! go through eigenvectors
          k = 0
          idprev=0
          do j=1,nbf ! go through LCAO-MO coefficients
-            if(idprev.gt.0.and.firstd(j).eq.idprev) cycle 
-            if(firstd(j).gt.idprev)then ! if a set of d functions is found, do trafo for all six d orbitals 
-               do jj=1,6
-                 k=k+1
-                 xcart=0.0d0
-                 do m=1,5
-                    mm=firstd(j)-1+m
-                    xcart=xcart+trafo(m,jj)*s(mm,i)
-                 enddo
-                 x(k,i)=xcart
-                enddo 
-                idprev=firstd(j) ! setting idprev to new value guarantees that the following 4 spherical d functions will be skipped (we already did the trafo)
+            if(idprev.gt.0.and.firstd(j).eq.idprev) cycle
+            if(firstd(j).gt.idprev)then ! a new d- or f-shell block starts here
+               if(blockl(firstd(j)).eq.3)then ! f-shell: 7 spherical -> 10 cartesian
+                  do jj=1,10
+                    k=k+1
+                    xcart=0.0d0
+                    do m=1,7
+                       mm=firstd(j)-1+m
+                       xcart=xcart+trafof(m,jj)*s(mm,i)
+                    enddo
+                    x(k,i)=xcart
+                  enddo
+               else                          ! d-shell: 5 spherical -> 6 cartesian
+                  do jj=1,6
+                    xcart=0.0d0
+                    k=k+1
+                    do m=1,5
+                       mm=firstd(j)-1+m
+                       xcart=xcart+trafo(m,jj)*s(mm,i)
+                    enddo
+                    x(k,i)=xcart
+                  enddo
+               endif
+                idprev=firstd(j) ! guarantees the rest of this block's spherical fns are skipped
                 cycle
             endif
             k=k+1

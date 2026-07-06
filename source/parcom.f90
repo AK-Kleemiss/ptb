@@ -14,12 +14,12 @@ module parcom
       real(wp) ener_par5 (10,86)
       real(wp) ener_par6 (10,86)
 
-      real(wp) shell_xi  (10,86)
-      real(wp) shell_cnf1(10,86)
-      real(wp) shell_cnf2(10,86)
-      real(wp) shell_cnf3(10,86)
+      real(wp) shell_xi  (13,86)
+      real(wp) shell_cnf1(13,86)
+      real(wp) shell_cnf2(13,86)
+      real(wp) shell_cnf3(13,86)
       real(wp) shell_cnf4(10,86)
-      real(wp) shell_resp(10,86,2)
+      real(wp) shell_resp(13,86,2)
 
 !     real(wp),parameter :: mull_loew14 = 0.1666666667_wp ! Mulliken-Loewdin mixing factor (0=M, 0.5=L)
 !     real(wp),parameter :: mull_loew14 = 0.2500000000_wp ! Mulliken-Loewdin mixing factor (0=M, 0.5=L)

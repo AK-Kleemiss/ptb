@@ -38,7 +38,7 @@ subroutine calcvecp(n,nao,at,xyz,rab,norm,Scv,v)
             do jsh=1,cbas_nsh(atn)             ! core shells of atom nn
                do l=1,llao2(cbas_lsh(jsh,atn)) ! AOs of core shell jsh
                   m = m + 1
-                  stmp(m,i)=-clev(jsh,atn) * Scv(m,i) * shell_cnf1(10,atn)
+                  stmp(m,i)=-clev(jsh,atn) * Scv(m,i) * shell_cnf1(12,atn)
                enddo
             enddo
          enddo
@@ -1081,7 +1081,7 @@ subroutine setupcbas0(n,at)
       allocate(corelist(n))
       ncorelist=0 
       do i=1,n
-         if(abs(shell_cnf1(10,at(i))).gt.1d-6)then
+         if(abs(shell_cnf1(12,at(i))).gt.1d-6)then
             ncorelist=ncorelist+1
             corelist(ncorelist)=i
          endif
