@@ -7,5 +7,12 @@ build/ptb
 .vs/ptb/v17/.wsuo
 *.db-shm
 *.db-wal
+tools/lanthanide_fit/work/
+tools/lanthanide_fit/.venv-mace-osaka/
+tools/lanthanide_fit/models/
+*.denmat
+*.cube
 *.opendb
 *.db
+/tools/lanthanide_fit/ptb_lnf/__pycache__
+/tools/lanthanide_fit/__pycache__

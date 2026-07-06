@@ -4,7 +4,7 @@ WITH_DFTD4 = TRUE
 SOURCES = accuracy.f90 timer.f90 la.f90 blas_level1.f90 blas_level2.f90 blas_level3.f90 lapack_eig.f90
 $(foreach src, $(SOURCES), $(eval $(src) := $(patsubst %.f90, %.o, $(src))))
 
-MODULES= bascom.o parcom.o com.o thresholds.o cbascom.o mocom.o dftd4.o aescom.o default_files.o \
+MODULES= bascom.o parcom.o com.o thresholds.o cbascom.o mocom.o dftd4.o aescom.o default_files.o density_export.o \
 			$(foreach src, $(SOURCES), $($(src)))
 
 CFILES= symmetry_i.o
@@ -23,21 +23,25 @@ OBJS = $(MODULES) $(CFILES) $(OBJS1) $(MAINFILES)
 ifeq ($(OS), Windows_NT)
   NAME := WINDOWS
   RM = rm
+  MKDIR_BUILD = if not exist ..\build mkdir ..\build
 else
   UNAME_S := $(shell uname -s)
   ifeq ($(UNAME_S), Linux)
     NAME := LINUX
 	RM = rm
+	MKDIR_BUILD = mkdir -p ../build
 	COMPILER ?= ifx
   endif
   ifeq ($(UNAME_S), Darwin)
     NAME := MAC
+	MKDIR_BUILD = mkdir -p ../build
   endif
 endif
 #--------------------------------------------------------------------------
 FC = ifx
 CC  = icx
 ifeq ($(NAME),WINDOWS)
+	PROG = ../build/ptb.exe
 	LINKER = $(FC) -static -I"$(MKLROOT)/include/intel64/lp64" -I"$(MKLROOT)/include" -Qiopenmp
 	LIBS = \
 	"$(MKLROOT)/lib/mkl_blas95_lp64.lib" \
@@ -91,7 +95,7 @@ all: $(PROG)
 .PHONY: all
 .PHONY: clean
 create_build_dir:
-	@mkdir -p ../build
+	@$(MKDIR_BUILD)
 
 
 #--------------------------------------------------------------------------
@@ -119,7 +123,7 @@ fortran.o : $(CUDA)/src/fortran.c
 	$(CC) $(CCFLAGS) -c $< -o $@
 
 # linken
-$(PROG): $(OBJS) 
+$(PROG): create_build_dir $(OBJS) 
 	$(LINKER) $(OBJS) $(LIBS) -o $(PROG)
 
 # dependencies

@@ -7,6 +7,7 @@ program gTB
    use mocom    ! ref MOs for fit and momatch value
    use dftd4
    use pgtb_
+   use density_export, only: write_density_export
    use iso_fortran_env, only : wp => real64
    use purification_settings, only: tPurificationSet
    use default_files, only: default_atompara
@@ -37,10 +38,11 @@ program gTB
    character*80 str(10)
    logical :: ex
    logical :: stda
+   logical :: write_denmat
    logical :: logicals(10)
    logical :: used_default_par
 
-   character(len=256)      :: fname,pname,bname,atmp,arg1
+   character(len=256)      :: fname,pname,bname,atmp,arg1,denmat_name
    character(len=220)      :: pline
 
    !> Handle purification
@@ -49,12 +51,14 @@ program gTB
    call timing(t00,w00)
 
    stda    =.false.
+   write_denmat = .false.
    prop = 1
    pnt  = 0
    chrg = 0
    nopen= 0
    pname='~/.atompara'
    bname="~/.basis_vDZP"
+   denmat_name = 'ptb.denmat'
 
    expscal=0
    expscal(4,1:10,1:86)=1.0d0  ! back to standard exp
@@ -92,6 +96,10 @@ program gTB
       endif
       if(index(arg1,'-bas').ne.0)then
          call getarg(i+1,bname)
+      endif
+      if(index(arg1,'-denmat').ne.0)then
+         write_denmat = .true.
+         call getarg(i+1,denmat_name)
       endif
       if(index(arg1,'-chrg').ne.0)then
          call getarg(i+1,atmp)
@@ -181,16 +189,14 @@ program gTB
    call rd(.true.,fname,n,xyz,at)
    call calcrab(n,at,xyz,rab)
 
-! lanthanides (Ce-Lu, Z=58-71) have no independently fitted PTB parameters;
-! all of them currently borrow La's (Z=57) parameter block as a rough
-! nearest-neighbor approximation, not a real fit. Warn loudly so results
-! are never mistaken for validated PTB output.
+! lanthanides currently use experimental PTB parameters. Warn loudly so
+! results are never mistaken for validated production PTB output.
    do i=1,n
-      if (at(i).ge.58.and.at(i).le.71) then
+      if (at(i).ge.57.and.at(i).le.71) then
          print '(a,i0,a,i0,a)', "WARNING: atom ",i," is Z=",at(i), &
-         & " (a lanthanide, Ce-Lu). PTB has no independent fit for this "// &
-         & "element range; parameters are borrowed from La (Z=57) as an "// &
-         & "unvalidated approximation. Treat results with heavy skepticism."
+         & " (La-Lu). PTB lanthanide parameters are experimental; treat "// &
+         & "density results as a fitting baseline until this element range "// &
+         & "has been revalidated."
       end if
    enddo
 
@@ -242,6 +248,7 @@ program gTB
    if(prop.gt.0) call dipint(n,ndim,at,xyz,rab,xnorm,pnt,D3)! dipole integrals
    call pgtb(.true.,prop,n,ndim,nel,nopen,ihomo,at,chrg,xyz,z,rab,pnt,xnorm,S,D3,&
    &          efield,ML1,ML2,psh,q,P,F,eps,wbo,dip,alp, pur)
+   if(write_denmat) call write_density_export(trim(denmat_name),n,ndim,at,xyz,P,S,xnorm)
 
    call timing(t1,w1)
    call prtime(6,t1-t00,w1-w00,'all')
@@ -279,6 +286,7 @@ subroutine help
       "-stda              output stda/TM compatible format", &
       "-par <file>        read parameters from provided file", &
       "-bas <file>        read basis set from provided file", &
+      "-denmat <file>     write PTB density matrix and AO metadata", &
       "-purify            use density matrix purification instead of diagonalization", &
       "-version           print version header and exit", &
       "-help              show this help message", &

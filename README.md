@@ -19,3 +19,17 @@ git clone https://github.com/grimme-lab/ptb.git
 cd source
 ```
 You can the build the project via `make`.
+
+## Lanthanide density fitting workflow
+
+Experimental La-Lu density reparameterization tooling lives in
+`tools/lanthanide_fit`. The PTB binary supports an opt-in density export:
+
+```
+ptb molecule.xyz -par .atompara -bas .basis_vDZP -denmat molecule.denmat
+```
+
+The Python workflow can verify the current La-Lu baseline, generate seed
+structures, write ORCA/SLURM inputs, project PTB density matrices onto ORCA cube
+grids, and compare real-space density residuals. See
+`tools/lanthanide_fit/README.md`.
