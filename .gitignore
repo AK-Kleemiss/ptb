@@ -9,3 +9,5 @@ build/ptb
 *.db-wal
 *.opendb
 *.db
+tools/lanthanide_fit/.venv*
+tools/lanthanide_fit/models*

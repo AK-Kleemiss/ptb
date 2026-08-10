@@ -14,7 +14,7 @@ OBJS1 = matrix_ops.o metrics.o purification_settings.o norms.o  purification.o \
         ints.o intpack.o pop.o rdmat.o fermi.o reorder.o bas.o occ.o dtrf2.o lin.o energy.o \
         cma.o drsp.o mlpop.o calcrab.o pgtb.o eeq.o ncoord.o prdipole.o \
         sscal.o cbas.o gauss.o printmos.o qsort.o rdtm.o shellocc_ref.o wr_control_atoms.o \
-        guess_qsh.o
+        guess_qsh.o wrdenmat.o
 
 MAINFILES= main.o 
 
@@ -65,18 +65,17 @@ ifeq ($(NAME),LINUX)
 	else
 	    FC = gfortran
 	    CC = gcc
-	    MKLROOT = /usr/lib/x86_64-linux-gnu
-	    LINKER = $(FC) -static -I"/usr/include/mkl/intel64/lp64" -I"/usr/include" -O -g
+	    # MKLROOT is expected to be set in the environment (e.g. via
+	    # `module load intel-oneapi-mkl` on the cluster); dynamic link
+	    # against the single MKL dispatch lib (mkl_rt) so we don't need
+	    # to hardcode interface/threading-layer static lib names, which
+	    # differ across MKL layouts. Both candidate lib dirs are passed;
+	    # -L on a nonexistent path is not fatal.
+	    LINKER = $(FC) -I"$(MKLROOT)/include" -O -g -fopenmp
 	    LIBS = \
-		-L"/usr/lib/x86_64-linux-gnu/lapack" -llapack -L"/usr/lib/x86_64-linux-gnu/blas" -lblas -lpthread -lm
-	    #$(MKLROOT)/libmkl_blas95_ilp64.a \
-	    #$(MKLROOT)/libmkl_lapack95_ilp64.a \
-	    #-Wl,--start-group \
-	    #$(MKLROOT)/libmkl_gf_ilp64.a \
-	    #$(MKLROOT)/libmkl_core.a \
-	    #$(MKLROOT)/libmkl_sequential.a \
-	    #-Wl,--end-group -lpthread -lm
-	    FFLAGS = -g -fbacktrace -fcheck=all -ffree-line-length-none
+		-L"$(MKLROOT)/lib" -L"$(MKLROOT)/lib/intel64" -Wl,-rpath,$(MKLROOT)/lib -Wl,-rpath,$(MKLROOT)/lib/intel64 \
+		-lmkl_rt -lpthread -lm -ldl
+	    FFLAGS = -g -fbacktrace -fcheck=all -ffree-line-length-none -fopenmp
 		#FFLAGS = -O3 -fopenmp
 	    CCFLAGS = -O -DLINUX
 	endif

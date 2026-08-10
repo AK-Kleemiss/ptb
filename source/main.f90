@@ -39,8 +39,9 @@ program gTB
    logical :: stda
    logical :: logicals(10)
    logical :: used_default_par
+   logical :: write_denmat
 
-   character(len=256)      :: fname,pname,bname,atmp,arg1
+   character(len=256)      :: fname,pname,bname,atmp,arg1,denmatname
    character(len=220)      :: pline
 
    !> Handle purification
@@ -49,6 +50,7 @@ program gTB
    call timing(t00,w00)
 
    stda    =.false.
+   write_denmat = .false.
    prop = 1
    pnt  = 0
    chrg = 0
@@ -102,6 +104,10 @@ program gTB
          call getarg(i+1,atmp)
          call readline(atmp, floats, str, logicals, ns, nf, nl)
          nopen=floats(1)
+      endif
+      if(index(arg1,'-denmat').ne.0)then
+         write_denmat = .true.
+         call getarg(i+1,denmatname)
       endif
    enddo
 
@@ -181,19 +187,6 @@ program gTB
    call rd(.true.,fname,n,xyz,at)
    call calcrab(n,at,xyz,rab)
 
-! lanthanides (Ce-Lu, Z=58-71) have no independently fitted PTB parameters;
-! all of them currently borrow La's (Z=57) parameter block as a rough
-! nearest-neighbor approximation, not a real fit. Warn loudly so results
-! are never mistaken for validated PTB output.
-   do i=1,n
-      if (at(i).ge.58.and.at(i).le.71) then
-         print '(a,i0,a,i0,a)', "WARNING: atom ",i," is Z=",at(i), &
-         & " (a lanthanide, Ce-Lu). PTB has no independent fit for this "// &
-         & "element range; parameters are borrowed from La (Z=57) as an "// &
-         & "unvalidated approximation. Treat results with heavy skepticism."
-      end if
-   enddo
-
    call setavcn   ! av. el. CNs with erfs=-2.0
 
    increase_eps_weight = .false.
@@ -243,6 +236,11 @@ program gTB
    call pgtb(.true.,prop,n,ndim,nel,nopen,ihomo,at,chrg,xyz,z,rab,pnt,xnorm,S,D3,&
    &          efield,ML1,ML2,psh,q,P,F,eps,wbo,dip,alp, pur)
 
+   if (write_denmat) then
+      call wrdenmat(denmatname,n,at,xyz,ndim,P,S,xnorm)
+      write(*,'(a)') "Wrote AO density matrix to '"//trim(denmatname)//"'"
+   endif
+
    call timing(t1,w1)
    call prtime(6,t1-t00,w1-w00,'all')
 
@@ -280,6 +278,7 @@ subroutine help
       "-par <file>        read parameters from provided file", &
       "-bas <file>        read basis set from provided file", &
       "-purify            use density matrix purification instead of diagonalization", &
+      "-denmat <file>     write AO density/overlap matrix + basis metadata (PTB_DENMAT format)", &
       "-version           print version header and exit", &
       "-help              show this help message", &
       ""
