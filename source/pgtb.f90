@@ -322,6 +322,15 @@ contains
       yiter(1)=scfpar(7)
       yiter(2:)=1_wp
 
+!     psh is READ by shscalP below on iter=1 but only WRITTEN by guess_qsh
+!     further down in this same loop body, so the first pass reads whatever the
+!     caller's allocation left behind. It does not matter numerically - shscalP
+!     multiplies the shell charge by tmp, which is 0 unless iter>2 - but 0*NaN
+!     is NaN, and that NaN reaches the exponents through modbasd, the overlap
+!     through sint, and comes back out of dsygvd as NaN eigenvalues with
+!     INFO=0. Define it.
+      psh = 0.0_wp
+
       do iter=1, limit         ! two "iterations": in the first, q (=pa) = q(EEQ) and NO P (=+U)
 
          call shscalP(iter,n,at,psh,scal)
