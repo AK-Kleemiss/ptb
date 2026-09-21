@@ -309,5 +309,9 @@ subroutine head
    write(*,*) '     The modified repository is available at:'
    write(*,*) '                https://github.com/AK-Kleemiss/ptb'
    write(*,*)
+   write(*,*) '     NOTE: deviates from upstream vDZP for Yb (Z=70): the second'
+   write(*,*) '     d shell (0.0487/0.00207) was replaced 2026-09-21 by Tm/Lu'
+   write(*,*) '     geometric-mean exponents (0.1269/0.0511); see .basis_vDZP.'
+   write(*,*)
 
 end
