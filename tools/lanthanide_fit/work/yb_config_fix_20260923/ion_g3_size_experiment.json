@@ -1,0 +1,30 @@
+{
+  "purpose": "Improve the 717-case Yb training density fit while retaining neighbor-like d/f shell extents and independently integrable free-ion densities.",
+  "parent": "ion_g2",
+  "parent_sha256": "6eb12794d40838ce9b96050df769be7daa1c6e311d941b5dd6b048864ea51c39",
+  "basis_sha256": "28fce65c2dc48cd47c57ef4984c0ac15135b47ff90ed39ec1f43fbc909eb964c",
+  "job": 596350,
+  "cancelled_predecessor": 596349,
+  "method": "Two coordinate-descent sweeps, 8 evaluations per free parameter, multiplicative bounds 0.9 to 1.1 relative to ion_g2; ion configuration gate retained.",
+  "frozen_positions": "All of rows 6 and 11, plus (13,10) shell_resp(11,1); (6,6) remains 1.1392905882.",
+  "selection": "Select by training score only. Validation may reject overfitting, never select. Do not replace embedded ion_g2 defaults before independent gates pass.",
+  "atomic_ao_rms_radius_bohr": {
+    "shells": [6, 7, 8, 9],
+    "Tm": [2.058502, 3.607380, 0.710226, 2.037261],
+    "Yb": [2.243970, 4.393806, 0.698011, 1.982926],
+    "Lu": [2.156548, 5.300974, 0.686475, 1.943277]
+  },
+  "baseline_yb_total_rms_radius_bohr": {"q0": 1.8656000589, "q2": 1.9332800637, "q3": 1.9346009019},
+  "neighbor_total_rms_radius_bohr": {
+    "Tm": {"q0": 1.7712020931, "q2": 1.5415956027, "q3": 1.8277814174},
+    "Lu": {"q0": 1.8070612083, "q2": 1.7409287782, "q3": 1.7347573462}
+  },
+  "acceptance": [
+    "Training score below 0.019426166410 with exactly the same 717-case objective and basis.",
+    "Free-ion gate violation zero and electron traces 24/22/21 within 1e-6.",
+    "Rows 6 and 11 and coordinate (13,10) byte-identical to ion_g2; AO shell radii unchanged within 1e-4 bohr at quadrature orders 32 and 64.",
+    "Independent NoSpherA2 counts within 1e-3 of 24/22/21 at orders 32 and 64, order-to-order counts within 1e-5.",
+    "Yb q0/q2/q3 total RMS radii no more than 1% above ion_g2, with the neighbor comparison reported explicitly.",
+    "Validation score no worse than ion_g2 after its uncertainty is considered; reject material regression."
+  ]
+}

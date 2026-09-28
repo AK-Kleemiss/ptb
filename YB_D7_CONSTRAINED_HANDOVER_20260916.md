@@ -459,3 +459,33 @@ scoring on the downloaded references (`D:/lnf_yb_data`, manifest
   32 and 64, including trace/count convergence. RMS radii are about
   1.87/1.93/1.93 bohr, improved from d2e's 2.57/2.77/2.79.
   Results: `tools/lanthanide_fit/work/yb_config_fix_20260923/ion_g2/`.
+
+## 28 Sep 2026 - size-preserving continuation in progress
+
+- Direct AO extent check on the released basis/parameter file (same Windows
+  IFX executable, atomic q0/2/3, Gaussian quadrature orders 32/64): second d
+  shell RMS radius Tm/Yb/Lu = 3.607/4.394/5.301 bohr; f shells 8 and 9 are
+  Tm/Yb/Lu = 0.710/0.698/0.686 and 2.037/1.983/1.943 bohr. The Yb shell
+  extents are bracketed by its neighbors, and each AO shell's density outside
+  20 bohr is negligible. `shell_sizes_20260928/result.json` gives all shells
+  and charges. These are AO extents, not occupied l-population radii.
+- The free-atom Yb AO overlap has p/f cross terms (maximum 0.482), so the
+  gate's P.S p/f numbers are a basis partition, not exact angular-momentum
+  occupations. Keep the DFT-matched population windows as a diagnostic gate;
+  do not interpret f=14.07 as an exact f electron count.
+- Independent NoSpherA2 atom radii for Tm q0/2/3: 1.771/1.542/1.828 bohr;
+  Lu: 1.807/1.741/1.735; Yb ion_g2: 1.866/1.933/1.935. Yb cations remain
+  larger, so a fit must not worsen their sizes. Neighbor control result:
+  `neighbor_exports_20260928/result.json`.
+- Size-preserving continuation `ion_g3_size`, job 596350, started from the
+  ion_g2 candidate. It freezes all row 6 and row 11 radial scales and
+  (13,10), the shell response term used by the self-consistent radial update;
+  retains the ion population gate, 717 training/169 validation split, and
+  exact basis hash. Two sweeps with [0.9,1.1] per-value bounds. Job 596349
+  was cancelled after 2:57 because the first script omitted (13,10); its
+  output must not be used. Job 596350 reproduced 0.019426166410 before fitting.
+- `ion_g3_size_experiment.json` contains the acceptance criteria. The Windows
+  background watcher `watch_ion_g3.py` polls the job,
+  copies completed results, reproduces scores, checks ions/AO extents, runs
+  independent NoSpherA2 exports, and writes `ion_g3_size/verdict.json`.
+  A passing verdict is staged for review; no default update is automatic.
