@@ -21,6 +21,11 @@ module parcom
       real(wp) shell_cnf4(10,86)
       real(wp) shell_resp(13,86,2)
 
+!     Optional experimental radial response.  It is deliberately not stored in
+!     atompara: zero is the production/default model.  The command-line flag
+!     is used only by guarded Yb model-development screens.
+      real(wp) :: yb_d7_charge_response = 0.0_wp
+
 !     real(wp),parameter :: mull_loew14 = 0.1666666667_wp ! Mulliken-Loewdin mixing factor (0=M, 0.5=L)
 !     real(wp),parameter :: mull_loew14 = 0.2500000000_wp ! Mulliken-Loewdin mixing factor (0=M, 0.5=L)
       real(wp),parameter :: mull_loew14 = 0.3333333333_wp ! Mulliken-Loewdin mixing factor (0=M, 0.5=L)

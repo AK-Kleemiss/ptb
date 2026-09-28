@@ -1397,6 +1397,15 @@ contains
          do ish=1,bas_nsh(at(i))
             qa = atocc(ish)-psh(ish,i)
             scal(ish,i) = expscal(3,ish,at(i)) * (1d0 + tmp*qa)
+!           Experimental, default-off Yb d-shell radial response.  Shell 7 is
+!           the second d shell for Yb (s,s,s,p,p,d,d,f,f).  qa is its
+!           population deviation from the neutral atomic reference, so a
+!           positive coefficient contracts the shell upon charge depletion.
+!           exp(0*qa)=1 preserves the production model bit-for-bit in this
+!           calculation path.
+            if(at(i).eq.70 .and. ish.eq.7 .and. yb_d7_charge_response.ne.0d0) then
+               scal(ish,i) = scal(ish,i) * exp(yb_d7_charge_response*qa)
+            endif
          enddo
       enddo
 

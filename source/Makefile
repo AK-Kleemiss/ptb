@@ -71,13 +71,18 @@ ifeq ($(NAME),LINUX)
 	    # to hardcode interface/threading-layer static lib names, which
 	    # differ across MKL layouts. Both candidate lib dirs are passed;
 	    # -L on a nonexistent path is not fatal.
-	    LINKER = $(FC) -I"$(MKLROOT)/include" -O -g -fopenmp
+	    LINKER = $(FC) -I"$(MKLROOT)/include" -O3 -fopenmp
 	    LIBS = \
 		-L"$(MKLROOT)/lib" -L"$(MKLROOT)/lib/intel64" -Wl,-rpath,$(MKLROOT)/lib -Wl,-rpath,$(MKLROOT)/lib/intel64 \
 		-lmkl_rt -lpthread -lm -ldl
-	    FFLAGS = -g -fbacktrace -fcheck=all -ffree-line-length-none -fopenmp
-		#FFLAGS = -O3 -fopenmp
-	    CCFLAGS = -O -DLINUX
+	    # Production fallback when ifx is unavailable.  The fit launches many
+	    # independent one-thread PTB processes, so runtime checks and an
+	    # unoptimised build make the array jobs unnecessarily slow.
+	    FFLAGS = -O3 -ffree-line-length-none -fopenmp
+	    ifeq ($(DEBUG),1)
+	      FFLAGS = -Og -g -fbacktrace -fcheck=all -ffree-line-length-none -fopenmp
+	    endif
+	    CCFLAGS = -O3 -DLINUX
 	endif
 endif
 ifeq ($(NAME),MAC)

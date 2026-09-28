@@ -60,6 +60,7 @@ program gTB
 
    expscal=0
    expscal(4,1:10,1:86)=1.0d0  ! back to standard exp
+   yb_d7_charge_response=0.0_wp
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! input options
@@ -85,29 +86,40 @@ program gTB
    call getarg(1,fname)
    do i=2,command_argument_count()
       call getarg(i,arg1)
-      if(index(arg1,'-stda')   .ne.0)stda=.true.  ! stda write
-      if(index(arg1,'-purify').ne.0) then ! purification modus
+!     Match flags exactly.  index() matched the flag as a SUBSTRING anywhere in
+!     the argument, so a file path containing one -- e.g. a scratch directory
+!     named /tmp/yb-basis-d2.../basis_vDZP, which contains '-bas' -- re-triggered
+!     the flag when the loop reached the path itself and set the filename to the
+!     NEXT argument. PTB then fell back to its built-in basis without failing,
+!     silently scoring the wrong basis for a whole fitting campaign.
+      if(trim(arg1).eq.'-stda')stda=.true.  ! stda write
+      if(trim(arg1).eq.'-purify') then ! purification modus
          allocate(pur)
       endif
-      if(index(arg1,'-par').ne.0)then
+      if(trim(arg1).eq.'-par')then
          call getarg(i+1,pname)
       endif
-      if(index(arg1,'-bas').ne.0)then
+      if(trim(arg1).eq.'-bas')then
          call getarg(i+1,bname)
       endif
-      if(index(arg1,'-chrg').ne.0)then
+      if(trim(arg1).eq.'-chrg')then
          call getarg(i+1,atmp)
          call readline(atmp, floats, str, logicals, ns, nf, nl)
          chrg=floats(1)
       endif
-      if(index(arg1,'-uhf').ne.0)then
+      if(trim(arg1).eq.'-uhf')then
          call getarg(i+1,atmp)
          call readline(atmp, floats, str, logicals, ns, nf, nl)
          nopen=floats(1)
       endif
-      if(index(arg1,'-denmat').ne.0)then
+      if(trim(arg1).eq.'-denmat')then
          write_denmat = .true.
          call getarg(i+1,denmatname)
+      endif
+      if(trim(arg1).eq.'-yb-d7-qexp')then
+         call getarg(i+1,atmp)
+         call readline(atmp, floats, str, logicals, ns, nf, nl)
+         yb_d7_charge_response=floats(1)
       endif
    enddo
 
@@ -279,6 +291,7 @@ subroutine help
       "-bas <file>        read basis set from provided file", &
       "-purify            use density matrix purification instead of diagonalization", &
       "-denmat <file>     write AO density/overlap matrix + basis metadata (PTB_DENMAT format)", &
+      "-yb-d7-qexp <x>   experimental: Yb second-d-shell exponent response exp(x*delta_n_d)", &
       "-version           print version header and exit", &
       "-help              show this help message", &
       ""

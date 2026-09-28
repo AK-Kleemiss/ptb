@@ -1,0 +1,62 @@
+{
+ "element": "Yb",
+ "note": "wB97X-3c free ions (cluster job 533901, yb_config_fix_20260923/ions, Mulliken reduced l-pops, exact for an atom): Yb0 s4 p6 d0 f14, Yb2+ s2 p6 d0 f14, Yb3+ s2 p6 d0 f13. Windows are +-0.5 around these (q0 d up to 1).",
+ "charges": {
+  "0": {
+   "s": [
+    3.5,
+    4.5
+   ],
+   "p": [
+    5.5,
+    6.5
+   ],
+   "d": [
+    0.0,
+    1.0
+   ],
+   "f": [
+    13.5,
+    14.5
+   ]
+  },
+  "2": {
+   "s": [
+    1.8,
+    2.6
+   ],
+   "p": [
+    5.5,
+    6.5
+   ],
+   "d": [
+    0.0,
+    0.5
+   ],
+   "f": [
+    13.5,
+    14.5
+   ]
+  },
+  "3": {
+   "s": [
+    1.8,
+    2.6
+   ],
+   "p": [
+    5.5,
+    6.5
+   ],
+   "d": [
+    0.0,
+    0.5
+   ],
+   "f": [
+    12.5,
+    13.5
+   ]
+  }
+ },
+ "hard_limit": 100.0,
+ "weight": 0.02
+}
