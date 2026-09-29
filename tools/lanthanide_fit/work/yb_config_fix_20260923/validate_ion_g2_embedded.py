@@ -1,6 +1,7 @@
 """Check embedded ion_g2 defaults against the candidate and unchanged controls."""
 import hashlib
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -12,11 +13,12 @@ ROOT = HERE.parents[3]
 sys.path.insert(0, str(HERE.parents[1]))
 from ptb_lnf.denmat import read_denmat  # noqa: E402
 
-PTB = ROOT / "build/ptb_windows_ifx_yb_ion_g2_20260928.exe"
-OLD = ROOT / "build/ptb_windows_ifx_yb_d7_joint2_20260921.exe"
-PAR = HERE / "ion_g2/final_candidate.atompara"
+PTB = Path(os.environ.get("YB_RELEASE_PTB", str(ROOT / "build/ptb_windows_ifx_yb_ion_g2_20260928.exe")))
+OLD = Path(os.environ.get("YB_RELEASE_OLD", str(ROOT / "build/ptb_windows_ifx_yb_d7_joint2_20260921.exe")))
+PAR = Path(os.environ.get("YB_RELEASE_PAR", str(HERE / "ion_g2/final_candidate.atompara")))
 BAS = ROOT / ".basis_vDZP"
-OUT = HERE / "ion_g2/embedded_validation.json"
+OUT = Path(os.environ.get("YB_RELEASE_OUT", str(HERE / "ion_g2/embedded_validation.json")))
+WORK = Path(os.environ.get("YB_RELEASE_WORK", str(HERE / "ion_g2/embedded_smoke")))
 
 
 def sha(path: Path) -> str:
@@ -42,7 +44,7 @@ results = []
 for element, z in (("Yb", 70), ("Tm", 69), ("La", 57)):
     for charge in (0, 2, 3):
         expected = z - 46 - charge
-        work = HERE / "ion_g2/embedded_smoke" / element
+        work = WORK / element
         pe, te = run(PTB, work / f"embedded_q{charge}", element, charge, expected % 2, [])
         pp, tp = run(PTB, work / f"parfile_q{charge}", element, charge, expected % 2,
                      ["-par", str(PAR), "-bas", str(BAS)])

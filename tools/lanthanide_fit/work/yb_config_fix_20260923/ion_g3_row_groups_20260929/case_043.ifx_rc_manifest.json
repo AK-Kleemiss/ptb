@@ -1,0 +1,8 @@
+{
+  "candidate": "D:\\git\\ptb\\tools\\lanthanide_fit\\work\\yb_config_fix_20260923\\ion_g3_row_groups_20260929\\case_043.atompara",
+  "candidate_sha256": "cac3f24eba7fa4238cfc3c9cd5809e2548203e4307f2facea8e6f5fde53011c1",
+  "source_commit": "a3736c110a8668d0bd59d452431827253d41e4ef",
+  "embedded_source_sha256": "2df17854e8e1b82681fa4f546a464481233b19dc4fdfca05551b8bc63a430377",
+  "frozen_radial_rows_sha256": "83d12ad809a8a406d7bc901a521fb81c7981db1342d845e4d9ba2b4b58ab37b3",
+  "frozen_response_13_10": "0.5389276427"
+}

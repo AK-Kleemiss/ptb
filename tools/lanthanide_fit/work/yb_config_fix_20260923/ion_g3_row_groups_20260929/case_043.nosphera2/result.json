@@ -1,0 +1,79 @@
+{
+  "created_utc": "2026-09-29T19:06:15.317113+00:00",
+  "ptb_sha256": "fb7756d19669b677fc2baa5eb23c5ee01013d0da2b3d97de4cfd7c7aaaaf2027",
+  "nosphera2_sha256": "f1b72ad85466e4ea6e9cab0f27fdcf702166782ca2cc4d7cdd4b595168a7cf1d",
+  "candidate_sha256": "cac3f24eba7fa4238cfc3c9cd5809e2548203e4307f2facea8e6f5fde53011c1",
+  "basis_sha256": "28fce65c2dc48cd47c57ef4984c0ac15135b47ff90ed39ec1f43fbc909eb964c",
+  "states": [
+    {
+      "charge": 0,
+      "expected": 24,
+      "trace": 24.00000000000003,
+      "independent_export": [
+        {
+          "order": 32,
+          "counts": {
+            "20": 24.000000028734576,
+            "80": 24.000000028734682
+          },
+          "rms_radius": 1.8707139625948541
+        },
+        {
+          "order": 64,
+          "counts": {
+            "20": 24.00000002965035,
+            "80": 24.000000029650444
+          },
+          "rms_radius": 1.8707139626249145
+        }
+      ]
+    },
+    {
+      "charge": 2,
+      "expected": 22,
+      "trace": 22.000000000000217,
+      "independent_export": [
+        {
+          "order": 32,
+          "counts": {
+            "20": 22.000000021000904,
+            "80": 22.00000002100096
+          },
+          "rms_radius": 1.9294031869080954
+        },
+        {
+          "order": 64,
+          "counts": {
+            "20": 22.0000000182154,
+            "80": 22.000000018215452
+          },
+          "rms_radius": 1.9294031868767345
+        }
+      ]
+    },
+    {
+      "charge": 3,
+      "expected": 21,
+      "trace": 21.00000000000016,
+      "independent_export": [
+        {
+          "order": 32,
+          "counts": {
+            "20": 21.000000029901813,
+            "80": 21.000000029901862
+          },
+          "rms_radius": 1.9340387313560414
+        },
+        {
+          "order": 64,
+          "counts": {
+            "20": 21.000000026564667,
+            "80": 21.000000026564727
+          },
+          "rms_radius": 1.9340387311670597
+        }
+      ]
+    }
+  ],
+  "release": false
+}

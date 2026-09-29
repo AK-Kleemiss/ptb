@@ -1,0 +1,8 @@
+{
+  "candidate": "D:\\git\\ptb\\tools\\lanthanide_fit\\work\\yb_config_fix_20260923\\ion_g3_size\\final_candidate.atompara",
+  "candidate_sha256": "9a2109cadc3e463bc1d766c0f0a6abc3b30da908b91d5b25fe49c6dfa8aaf0df",
+  "source_commit": "a3736c110a8668d0bd59d452431827253d41e4ef",
+  "embedded_source_sha256": "ce72606fdc33e559eb1b145daebe818719cc78810b0414c23db4ac97f66ec5f5",
+  "frozen_radial_rows_sha256": "83d12ad809a8a406d7bc901a521fb81c7981db1342d845e4d9ba2b4b58ab37b3",
+  "frozen_response_13_10": "0.5389276427"
+}

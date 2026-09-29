@@ -489,3 +489,37 @@ scoring on the downloaded references (`D:/lnf_yb_data`, manifest
   copies completed results, reproduces scores, checks ions/AO extents, runs
   independent NoSpherA2 exports, and writes `ion_g3_size/verdict.json`.
   A passing verdict is staged for review; no default update is automatic.
+
+## 29 Sep 2026 - g3 rejected on neutral size; size-passing candidate and g4
+
+- Job 596350 completed normally in 10:45:21. g3 train 0.019140684992,
+  validation 0.018611089035, ion violation 0, AO shell radii unchanged,
+  independent NoSpherA2 counts passed. Its neutral Yb RMS radius rose
+  1.865600 -> 1.909010 bohr (+2.3%), beyond the preregistered +1% limit;
+  `ion_g3_size/verdict.json` rejects it. Committed ion_g2 defaults remain.
+- Isolated Windows IFX build of g3 (`build/ion_g3_rc_20260929/build/ptb`, SHA256
+  fb7756d19669b677fc2baa5eb23c5ee01013d0da2b3d97de4cfd7c7aaaaf2027)
+  exactly reproduced g3's Yb parameter-file atom densities and unchanged
+  Tm/La controls. This is a diagnostic binary, not the default executable.
+- Straight interpolation g2->g3 at fractions 0.25/0.4/0.5/0.75 was rejected:
+  Yb2+ switched to s4/p~5.7/f~12.3, ion violation ~2.6. Single-coordinate
+  backoffs from g3: 79 tested, 71 with ion violation 0, none with acceptable
+  neutral radius. No molecular score was used for these rejected states.
+- Coordinated row backoffs: 127 combinations of rows 7/8/9/10/12/13/14 were
+  ion/radius-screened; 24 passed both. Five minimal feasible groups were scored
+  on the same 717-case training set. Best was case_043, reverting rows 7,13,14
+  to g2 while retaining g3's rows 8,9,10,12: train 0.019309259096,
+  validation 0.018774555259, versus g2 0.019426166410/0.018851480493.
+  Candidate SHA256 cac3f24eba7fa4238cfc3c9cd5809e2548203e4307f2facea8e6f5fde53011c1.
+- case_043 passed Windows free-ion gate (24/22/21) and independent NoSpherA2
+  counts at orders 32/64. q0/q2/q3 radii: 1.870714/1.929403/1.934039 bohr;
+  all within +1% of ion_g2. The d/f AO radii are exactly unchanged.
+  Isolated embedded IFX candidate `build/ion_g3_sizepass_rc_20260929/build/ptb`
+  SHA256 d29020ab8d6507d005fdc2c4bc092059a451c9fd2427c329b82ea8495388559c
+  reproduced train/validation and bit-identical embedded/parameter-file Yb
+  atoms; Tm/La remained bit-identical to ion_g2.
+- Further bounded fit job 603385 (`ion_g4_sizepass`) was submitted from case_043
+  on 29 Sep after checking for queued/running jobs. It freezes rows 6,7,11,13,14;
+  only rows 8,9,10,12 are free. The 717/169 split and ion gate remain. At
+  submission it was PENDING (Priority). `watch_ion_g4.py` polls and independently
+  verifies its final candidate. No default replacement is automatic.

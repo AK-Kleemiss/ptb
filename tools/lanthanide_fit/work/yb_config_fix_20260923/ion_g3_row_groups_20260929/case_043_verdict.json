@@ -1,0 +1,15 @@
+{
+  "status": "passed_for_staging",
+  "selection": "Lowest 717-case training score among five minimal ion/radius-feasible row-group backoffs; validation checked only after selection.",
+  "candidate_sha256": "cac3f24eba7fa4238cfc3c9cd5809e2548203e4307f2facea8e6f5fde53011c1",
+  "reverted_rows_from_g3": [7, 13, 14],
+  "train": 0.019309259096,
+  "validation": 0.018774555259,
+  "ion_violation": 0.0,
+  "atomic_rms_radius_bohr": {"q0": 1.8707139626249145, "q2": 1.9294031868767345, "q3": 1.9340387311670597},
+  "ao_shell_radius_max_delta_vs_g2_bohr": 0.0,
+  "independent_nosphera2_counts": "passed for q0/q2/q3 at radial orders 32 and 64",
+  "ifx_embedded_executable_sha256": "d29020ab8d6507d005fdc2c4bc092059a451c9fd2427c329b82ea8495388559c",
+  "ifx_embedded_atom_identity": "passed for Yb q0/q2/q3; Tm and La unchanged",
+  "default_replaced": false
+}

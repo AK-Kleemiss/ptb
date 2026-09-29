@@ -12,7 +12,9 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parents[1]))
 from ptb_lnf.optimize import score_manifest  # noqa: E402
-from scan_xi import BAS, PTB  # noqa: E402
+from scan_xi import BAS, PTB as DEFAULT_PTB  # noqa: E402
+
+PTB = Path(os.environ.get("YB_SCORE_PTB", str(DEFAULT_PTB)))
 
 MANIFEST = Path("D:/lnf_yb_data/yb_manifest_local.jsonl")
 
@@ -24,4 +26,4 @@ if __name__ == "__main__":
     for par in args:
         t = time.time()
         s = score_manifest(MANIFEST, PTB, Path(par).resolve(), BAS, {}, workers=46, element="Yb", split=split)
-        print(f"{split} {s:.6f} {time.time() - t:5.0f}s {par}", flush=True)
+        print(f"{split} {s:.12f} {time.time() - t:5.0f}s {par}", flush=True)

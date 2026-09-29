@@ -1,0 +1,58 @@
+{
+  "created_utc": "2026-09-28T19:16:55.698457+00:00",
+  "job": 596350,
+  "candidate_sha256": "9a2109cadc3e463bc1d766c0f0a6abc3b30da908b91d5b25fe49c6dfa8aaf0df",
+  "ptb_sha256": "308d82533af842efd7dcd2c3f3e8cf65f175816d6de6c10f5127a50e199de22f",
+  "basis_sha256": "28fce65c2dc48cd47c57ef4984c0ac15135b47ff90ed39ec1f43fbc909eb964c",
+  "train_cluster": 0.01914068499206116,
+  "validation_cluster": 0.01861108903548334,
+  "train_windows": 0.019141,
+  "validation_windows": 0.018611,
+  "ion_violation_windows": 0.0,
+  "ion_populations_windows": {
+    "0": {
+      "s": 3.9999999999999876,
+      "p": 5.918480851380467,
+      "d": 5.904396616724451e-32,
+      "f": 14.081519148619737,
+      "total": 24.000000000000192
+    },
+    "2": {
+      "s": 1.9999999999999813,
+      "p": 5.7843616486268825,
+      "d": 3.0585339111723137e-29,
+      "f": 14.21563835137348,
+      "total": 22.00000000000034
+    },
+    "3": {
+      "s": 1.9999999999999332,
+      "p": 5.661031956127435,
+      "d": 1.213403272941693e-28,
+      "f": 13.33896804386266,
+      "total": 20.999999999990028
+    }
+  },
+  "max_ao_radius_change_bohr": 0.0,
+  "atomic_radii_before": {
+    "0": 1.8656000588851611,
+    "2": 1.9332800636983813,
+    "3": 1.934600901862268
+  },
+  "atomic_radii_after": {
+    "0": 1.9090098086516913,
+    "2": 1.893774129493213,
+    "3": 1.9336380168554572
+  },
+  "checks": {
+    "train_improved": true,
+    "train_reproduced": true,
+    "validation_reproduced": true,
+    "validation_no_regression": true,
+    "radial_parameters_frozen": true,
+    "ao_radii_unchanged": true,
+    "free_ion_gate": true,
+    "electron_counts": true,
+    "total_atomic_radii": false
+  },
+  "status": "rejected"
+}

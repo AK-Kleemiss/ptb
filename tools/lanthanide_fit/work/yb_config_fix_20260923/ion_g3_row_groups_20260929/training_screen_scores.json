@@ -1,0 +1,58 @@
+{
+  "scoring_executable_sha256": "fb7756d19669b677fc2baa5eb23c5ee01013d0da2b3d97de4cfd7c7aaaaf2027",
+  "split": "train",
+  "count": 717,
+  "baseline_ion_g2": 0.019426159132,
+  "cases": [
+    {
+      "case": 13,
+      "reverted_rows": [
+        7,
+        14
+      ],
+      "candidate_sha256": "d8d486ab15d4eef00922d04b3f780f1d5decd93a64709c542567a4ae8185e878",
+      "train_score": 0.019311649913
+    },
+    {
+      "case": 33,
+      "reverted_rows": [
+        7,
+        8,
+        14
+      ],
+      "candidate_sha256": "e72961ceed205a417af60e2ec24ce1357637a63090a32c4c1df54927da875797",
+      "train_score": 0.019312376573
+    },
+    {
+      "case": 40,
+      "reverted_rows": [
+        7,
+        10,
+        14
+      ],
+      "candidate_sha256": "dbb64acec70acecce64c442849e62613a9e2711e6dce47972650e240ed942efd",
+      "train_score": 0.019427540121
+    },
+    {
+      "case": 42,
+      "reverted_rows": [
+        7,
+        12,
+        14
+      ],
+      "candidate_sha256": "787c6a2d7d68f99bb96f2cef06f371b41d43029a6276d8dbcd6efbb5c8f4c137",
+      "train_score": 0.019420778954
+    },
+    {
+      "case": 43,
+      "reverted_rows": [
+        7,
+        13,
+        14
+      ],
+      "candidate_sha256": "cac3f24eba7fa4238cfc3c9cd5809e2548203e4307f2facea8e6f5fde53011c1",
+      "train_score": 0.019309259096
+    }
+  ],
+  "selected_case": 43
+}
