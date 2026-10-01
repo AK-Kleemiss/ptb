@@ -530,3 +530,9 @@ scoring on the downloaded references (`D:/lnf_yb_data`, manifest
 - Train 0.019127715299 (case_043 0.019309259096); held-out validation 0.018606902088 (case_043 0.018774555259). Windows IFX parfile reproduction: 0.019127708791 / 0.018606901649.
 - Ion violation zero; free-ion totals 24/22/21. Fixed radial rows unchanged; maximum AO shell radius delta versus ion_g2 zero. Independent NoSpherA2 export at radial orders 32/64 passed counts and convergence for Yb 0/2+/3+. Atomic RMS radii 1.864584/1.929254/1.934823 bohr versus ion_g2 1.865600/1.933280/1.934601.
 - Full gate verdict: `tools/lanthanide_fit/work/yb_config_fix_20260923/ion_g4_sizepass/verdict.json` says `passed_for_review`. The first watcher stopped on transient SSH timeout; a direct rerun completed every local check. Candidate is staged only; default_files.f90 has not been changed.
+
+## 1 Oct 2026 - g4 embedded and release binaries validated
+
+- Promoted g4 SHA256 `aef910c4fb85d7d668cba2c2574661f7c68cbd8cad8df8c3763c3bca3643ddf8` into `source/default_files.f90`; only Yb rows 8,9,10,12 changed from released ion_g2. The frozen d/f radial and branch-control rows remain identical.
+- Clean Windows IFX build SHA256 `06c7e871eb5da36ee9fedbd34695c376be0312c26e96df7e4a89b603fa2bc13a`. Embedded Yb q0/2/3 density matrices match the parameter file bitwise; Tm/La match the prior release bitwise. Full Windows train/validation reproduction: 0.019127708791 / 0.018606901649. Independent NoSpherA2 q0/2/3 export at orders 32/64 passed.
+- Release files under `build/release_g4_20261001/`: `ptb.exe` (Windows x64), `ptb_linux_static` (Linux x86-64, fully static), `ptb_macos` (universal arm64/x86-64, Accelerate and libSystem only), plus SHA256SUMS and release notes. All architectures passed Yb q0/2/3 default runs; electron counts 24/22/21 and density matrices within 2.19e-6 of Windows. `RELEASE_G4_20261001.md` and `ion_g4_sizepass/release_manifest.json` preserve hashes and gates.

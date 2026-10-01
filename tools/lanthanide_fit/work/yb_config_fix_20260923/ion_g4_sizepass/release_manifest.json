@@ -1,0 +1,17 @@
+{
+  "status": "ready_for_draft_release",
+  "candidate_sha256": "aef910c4fb85d7d668cba2c2574661f7c68cbd8cad8df8c3763c3bca3643ddf8",
+  "source_default_files_sha256": "78deda4f01a30ca495b3c793bd3321a6c582321afb3c44cb34722089a5e680ab",
+  "basis_sha256": "28fce65c2dc48cd47c57ef4984c0ac15135b47ff90ed39ec1f43fbc909eb964c",
+  "assets": {
+    "ptb.exe": "06c7e871eb5da36ee9fedbd34695c376be0312c26e96df7e4a89b603fa2bc13a",
+    "ptb_macos": "30f998917346246a33e9aab83f84461a3cd431ba60b71584b43cd98bdd685c29",
+    "ptb_linux_static": "a44aaccce458d4844f9d607264c69366a60999b7f66a145a74bff34f240227ed"
+  },
+  "windows_embedded_validation": "passed",
+  "windows_nosphera2": "q0/q2/q3 passed at orders 32 and 64",
+  "windows_train": 0.019127708791,
+  "windows_validation": 0.018606901649,
+  "cross_platform_density_maxabs_limit": 1E-05,
+  "cross_platform_status": "passed"
+}
