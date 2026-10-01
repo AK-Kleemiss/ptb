@@ -523,3 +523,10 @@ scoring on the downloaded references (`D:/lnf_yb_data`, manifest
   only rows 8,9,10,12 are free. The 717/169 split and ion gate remain. At
   submission it was PENDING (Priority). `watch_ion_g4.py` polls and independently
   verifies its final candidate. No default replacement is automatic.
+
+## 1 Oct 2026 - ion_g4_sizepass completed and independently verified
+
+- Job 603385 completed normally in 5:59:59 (two sweeps, 705 trials). It started from case_043 and kept Yb rows 6,7,11,13,14 fixed. Final SHA256: `aef910c4fb85d7d668cba2c2574661f7c68cbd8cad8df8c3763c3bca3643ddf8`.
+- Train 0.019127715299 (case_043 0.019309259096); held-out validation 0.018606902088 (case_043 0.018774555259). Windows IFX parfile reproduction: 0.019127708791 / 0.018606901649.
+- Ion violation zero; free-ion totals 24/22/21. Fixed radial rows unchanged; maximum AO shell radius delta versus ion_g2 zero. Independent NoSpherA2 export at radial orders 32/64 passed counts and convergence for Yb 0/2+/3+. Atomic RMS radii 1.864584/1.929254/1.934823 bohr versus ion_g2 1.865600/1.933280/1.934601.
+- Full gate verdict: `tools/lanthanide_fit/work/yb_config_fix_20260923/ion_g4_sizepass/verdict.json` says `passed_for_review`. The first watcher stopped on transient SSH timeout; a direct rerun completed every local check. Candidate is staged only; default_files.f90 has not been changed.
